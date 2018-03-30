@@ -1,0 +1,44 @@
+---
+title: "BSDS 100 Case Study"
+author: "Jacques Sham & Charles Siu"
+date: "3/28/2018"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include = F}
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(devtool)
+library(ggmap)
+library(maps)
+library(mapdata)
+```
+
+```{r setup}
+setwd("/Users/jacquessham/Documents/GitHub/USF-BSDS100-CaseStudy")
+data <- read.csv("Air_Traffic_Passenger_Statistics.csv")
+```
+
+
+First, let's clean the data
+```{r cleanup}
+names(data) <- c("date","operAirline","operCode","airline","code","geomSumm","region","type","category","terminal","area","pax")
+
+
+## operAirline = Operating Airline, the airline that really operating, some airline would own a child company to operate a single route
+## operCode = Operating Airline Code
+## airline = Published Airline, mother company airline
+## code = Published Airline Code
+## isDomestic: If the flight is domestic,T; if international: F
+## region: Geom region
+## type: activity type; Deplaned means arrival, Enplaned means departure, Thru / Transit is other 
+## category: Airline price type; Low fare is Low cost carrier, else are others
+```
+
