@@ -20,8 +20,7 @@ library(mapdata)
 
 ```{r init, include = F}
 ## Set the working dir according to who is working
-wd <- getwd()
-if ("chunheisiu" %in% strsplit(wd, "/")[[1]]) {
+if ("chunheisiu" %in% strsplit(getwd(), "/")[[1]]) {
   setwd("/Users/chunheisiu/Dropbox/Documents/USF/2018_Spring/BSDS_100/USF-BSDS100-CaseStudy")
 } else {
   setwd("/Users/jacquessham/Documents/GitHub/USF-BSDS100-CaseStudy")
@@ -38,8 +37,7 @@ First, let's clean the data.
 names(data) <- c("date", "operAirline", "operCode", "airline", "code", "isDomestic", "region", "type", "category", "terminal", "area", "pax")
 
 ## Convert isDomestic to boolean
-data$isDomestic %<>%
-  plyr::revalue(c("Domestic" = T, "International" = F))
+data$isDomestic %<>% recode("Domestic" = T, "International" = F)
 
 ## Reformat the dates into Date objects
 data$date %<>% 
