@@ -41,7 +41,7 @@ data$isDomestic %<>% recode("Domestic" = T, "International" = F)
 
 ## Reformat the dates into Date objects
 data$date %<>% 
-  as.character(stringAsFactors = F) %>% 
+  as.character() %>% 
   as.yearmon("%Y%m") %>% 
   as.Date()
 
