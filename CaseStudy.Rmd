@@ -100,13 +100,13 @@ remove_axes <- theme(
 # Derive the cities and corresponding regions
 cities %<>%
   filter(
-    (name == "Adelaide" & country.etc == "Australia") |
+    (name == "Brisbane" & country.etc == "Australia") |
     (name %in% c("Topeka", "Yellowknife", "Tegucigalpa", "Port-au-Prince",
                        "Pontes e Lacerda", "Bambari", "Riyadh", "Mexico City",
-                       "Xining", "Ostrava"))
+                       "Shenzhen", "Ostrava"))
     ) %>% 
   mutate(region =
-           ifelse(name == "Adelaide", "Australia / Oceania",
+           ifelse(name == "Brisbane", "Australia / Oceania",
            ifelse(name == "Topeka", "US",
            ifelse(name == "Yellowknife", "Canada",
            ifelse(name == "Tegucigalpa", "Central America",
@@ -115,7 +115,7 @@ cities %<>%
            ifelse(name == "Bambari", "Africa",
            ifelse(name == "Riyadh", "Middle East",
            ifelse(name == "Mexico City", "Mexico",
-           ifelse(name == "Xining", "Asia",
+           ifelse(name == "Shenzhen", "Asia",
            ifelse(name == "Ostrava", "Europe", NA)))))))))))
   ) %>% 
   full_join(y = data %>%
