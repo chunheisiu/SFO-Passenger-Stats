@@ -2,7 +2,7 @@
 title: "BSDS 100 Case Study"
 author: "Jacques Sham & Charles Siu"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include = F}
@@ -84,7 +84,7 @@ data %>%
   scale_fill_discrete(name = "Month")
 ```
 
-```{r map, fig.height = 10, fig.width = 10}
+```{r map, fig.width = 10}
 world <- map_data("world")
 cities <- world.cities
 
@@ -100,14 +100,12 @@ remove_axes <- theme(
 # Derive the cities and corresponding regions
 cities %<>%
   filter(
-    (name == "San Francisco" & country.etc == "USA") |
     (name == "Adelaide" & country.etc == "Australia") |
     (name %in% c("Topeka", "Yellowknife", "Tegucigalpa", "Port-au-Prince",
                        "Pontes e Lacerda", "Bambari", "Riyadh", "Mexico City",
                        "Xining", "Ostrava"))
     ) %>% 
   mutate(region =
-           ifelse(name == "San Francisco", "SF",
            ifelse(name == "Adelaide", "Australia / Oceania",
            ifelse(name == "Topeka", "US",
            ifelse(name == "Yellowknife", "Canada",
@@ -118,26 +116,29 @@ cities %<>%
            ifelse(name == "Riyadh", "Middle East",
            ifelse(name == "Mexico City", "Mexico",
            ifelse(name == "Xining", "Asia",
-           ifelse(name == "Ostrava", "Europe", NA))))))))))))
-        )
+           ifelse(name == "Ostrava", "Europe", NA)))))))))))
+  ) %>% 
+  full_join(y = data %>%
+              mutate(region = as.character(region)) %>% 
+              group_by(region, type) %>%
+              summarize(pax = sum(pax)), by = "region")
 
-myCurve <- curveGrob(0, 0, 1, 1, default.units = "npc",
-               curvature = 0.2, angle = 90, ncp = 20, shape = 1,
-               square = FALSE, squareShape = 1,
-               inflect = FALSE, arrow = arrow(), open = TRUE,
-               debug = FALSE, name = NULL, gp = gpar(), vp = NULL)
+sf <- world.cities %>%
+  filter(name == "San Francisco" & country.etc == "USA")
 
 world %>% 
   filter(region != "Antarctica") %>% 
   ggplot() +
-  geom_polygon(aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
+  geom_curve(data = cities %>% filter(type == "Deplaned"), aes(x = long, y = lat, size = log(pax)),
+             xend = sf$long, yend = sf$lat, color = "dodgerblue2", curvature = 0.5) +
+  geom_curve(data = cities %>% filter(type == "Enplaned"), aes(x = long, y = lat, size = log(pax)),
+             xend = sf$long, yend = sf$lat, color = "mediumseagreen", curvature = -0.5) +
+  geom_point(x = sf$long, y = sf$lat, color = "red", size = 3, shape = 10) +
   geom_point(data = cities, aes(x = long, y = lat), color = "red", size = 3) +
-  coord_fixed(1.2) +
+  coord_fixed(1.3) +
   theme_minimal() +
-  geom_line(data = cities, aes(x = long, y = lat), color = "blue", size = 1) +
   remove_axes
-
-# annotation_custom(grob = myCurve, 0, 100, 0, 100)
 ```
 
 
