@@ -84,31 +84,27 @@ data %>%
   scale_fill_discrete(name = "Month")
 ```
 
-```{r map, fig.width = 10}
+```{r map_setup}
+# Load the world map and cities
 world <- map_data("world")
 cities <- world.cities
 
-remove_axes <- theme(
-  axis.text = element_blank(),
-  axis.line = element_blank(),
-  axis.ticks = element_blank(),
-  panel.border = element_blank(),
-  panel.grid = element_blank(),
-  axis.title = element_blank()
-  )
+# Retrieve the information of SF
+sf <- world.cities %>%
+  filter(name == "San Francisco" & country.etc == "USA")
 
 # Derive the cities and corresponding regions
 cities %<>%
   filter(
-    (name == "Brisbane" & country.etc == "Australia") |
-    (name %in% c("Topeka", "Yellowknife", "Tegucigalpa", "Port-au-Prince",
+    (name == "Adelaide" & country.etc == "Australia") |
+    (name %in% c("Topeka", "Saskatoon", "Tegucigalpa", "Port-au-Prince",
                        "Pontes e Lacerda", "Bambari", "Riyadh", "Mexico City",
                        "Shenzhen", "Ostrava"))
     ) %>% 
   mutate(region =
-           ifelse(name == "Brisbane", "Australia / Oceania",
+           ifelse(name == "Adelaide", "Australia / Oceania",
            ifelse(name == "Topeka", "US",
-           ifelse(name == "Yellowknife", "Canada",
+           ifelse(name == "Saskatoon", "Canada",
            ifelse(name == "Tegucigalpa", "Central America",
            ifelse(name == "Port-au-Prince", "Caribbean",
            ifelse(name == "Pontes e Lacerda", "South America",
@@ -121,45 +117,53 @@ cities %<>%
   full_join(y = data %>%
               mutate(region = as.character(region)) %>% 
               group_by(region, type) %>%
-              summarize(pax = sum(pax)), by = "region")
+              summarize(pax = sum(pax)), by = "region") %>% 
+  mutate(
+    origin.lat = ifelse(type == "Enplaned", sf$lat, lat),
+    origin.long = ifelse(type == "Enplaned", sf$long, long),
+    dest.lat = ifelse(type == "Enplaned", lat, sf$lat),
+    dest.long = ifelse(type == "Enplaned", long, sf$long)
+  )
+```
 
-sf <- world.cities %>%
-  filter(name == "San Francisco" & country.etc == "USA")
+```{r draw_map, fig.width = 10}
+draw_flight_curve <- geom_curve(data = cities %>% filter(type %in% c("Deplaned", "Enplaned")),
+                           aes(x = origin.long, y = origin.lat, xend = dest.long, yend = dest.lat, color = type),
+                           curvature = 0.5, arrow = arrow(length = unit(0.025, "npc")), alpha = 0.6)
 
-# world %>% 
-#   filter(region != "Antarctica") %>% 
-#   ggplot() +
-#   geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
-#   geom_curve(data = cities %>% filter(type == "Deplaned"), aes(x = long, y = lat, size = log(pax) / 100),
-#              xend = sf$long, yend = sf$lat, color = "dodgerblue2", curvature = 0.5) +
-#   geom_curve(data = cities %>% filter(type == "Enplaned"), aes(x = long, y = lat, size = log(pax) / 100),
-#              xend = sf$long, yend = sf$lat, color = "mediumseagreen", curvature = -0.5) +
-#   geom_point(x = sf$long, y = sf$lat, color = "red", size = 5) +
-#   coord_fixed(1.3) +
-#   theme_minimal() +
-#   remove_axes +
-#   guides(size = F)
+draw_sf_point <- geom_point(x = sf$long, y = sf$lat, color = "red", size = 3)
+
+draw_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
+                           hjust = 1, nudge_x = -5, color = "red", size = 3)
+
+draw_city_points <- geom_point(data = cities %>% filter(!(region %in% c("Africa", "Caribbean"))),
+             aes(x = long, y = lat), color = "black", size = 3)
+
+draw_city_labels <- geom_text(data = cities %>% filter(!(region %in% c("Africa", "Caribbean"))),
+            aes(x = long, y = lat, label = region),
+            hjust = 0, nudge_x = 3.5, nudge_y = -1, color = "black", size = 3)
+
+remove_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
 
 world %>% 
   filter(region != "Antarctica") %>% 
   ggplot() +
   geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
-  geom_curve(data = cities %>% filter(type == "Deplaned"), aes(x = long, y = lat),
-             xend = sf$long, yend = sf$lat, color = "dodgerblue2",
-             curvature = 0.5, arrow = arrow(length = unit(0.025, "npc"))) +
-  geom_curve(data = cities %>% filter(type == "Enplaned"), aes(xend = long, yend = lat),
-             x = sf$long, y = sf$lat, color = "mediumseagreen",
-             curvature = 0.5, arrow = arrow(length = unit(0.025, "npc"))) +
-  geom_point(x = sf$long, y = sf$lat, color = "red", size = 3) +
-  geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
-            hjust = 1, nudge_x = -5.5, color = "red", size = 3) +
-  geom_point(data = cities, aes(x = long, y = lat), color = "black", size = 3) +
-  geom_text(data = cities, aes(x = long, y = lat, label = region),
-            hjust = 0, nudge_x = 3, nudge_y = -1, color = "black", size = 3) +
+  draw_city_points +
+  draw_flight_curve +
+  draw_city_labels +
+  draw_sf_point +
+  draw_sf_label +
   coord_fixed(1.3) +
   theme_minimal() +
-  remove_axes +
-  guides(size = F)
+  scale_color_discrete(name = "Activity Type", labels = c("Arriving SFO", "Departing SFO")) +
+  remove_axes
 ```
-
 
