@@ -1,8 +1,8 @@
 ---
 title: "BSDS 100 Case Study"
 author: "Jacques Sham & Charles Siu"
-date: "3/28/2018"
-output: html_document
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
 ---
 
 ```{r setup, include = F}
@@ -14,8 +14,10 @@ library(tidyverse)
 library(magrittr)
 library(zoo)
 library(ggplot2)
+library(scales)
 library(maps)
 library(mapdata)
+library(grid)
 ```
 
 ```{r init, include = F}
@@ -30,29 +32,35 @@ if ("chunheisiu" %in% strsplit(getwd(), "/")[[1]]) {
 data <- read.csv("Air_Traffic_Passenger_Statistics.csv")
 ```
 
+## Part 1: Executive Summary
+
+!!DOTO: No more than 250 words explaining, with extreme concision, your data and findings!!
+
+
+## Part 2: Introduction to the Data
 First, let's clean the data.
 
 ```{r cleanup}
-## Rename the column names
-names(data) <- c("date", "operAirline", "operCode", "airline", "code", "isDomestic", "region", "type", "category", "terminal", "area", "pax")
+# Rename the column names
+names(data) <- c("date", "operAirline", "operCode", "airline", "code", "isDomestic",
+                 "region", "type", "category", "terminal", "area", "pax")
 
-## Convert isDomestic to boolean
+# Convert isDomestic to boolean
 data$isDomestic %<>% recode("Domestic" = T, "International" = F)
 
-## Reformat the dates into Date objects
+# Reformat the dates into Date objects
 data$date %<>% 
   as.character() %>% 
   as.yearmon("%Y%m") %>% 
   as.Date()
 
-## Get month and year values
+# Get month and year values
 data %<>% 
   mutate(month = date %>% format("%m") %>% factor(labels = month.name),
          year = date %>% format("%Y") %>% as.numeric())
 
-# Get min and max dates
-year_max <- max(data$year)
-year_min <- min(data$year)
+# Remove data from 2007 for easy comparison
+data %<>% filter(year != 2005) 
 
 ## operAirline = Operating Airline, the airline that really operating, some airline would own a child company to operate a single route
 ## operCode = Operating Airline Code
@@ -67,10 +75,69 @@ year_min <- min(data$year)
 ## pax: passenger count of given row
 ```
 
-```{r graph}
+```{r bar_graph}
 data %>% 
   ggplot() +
-  geom_bar(aes(x = year, fill = month))
+  geom_bar(aes(x = year, y = pax / 1000000, fill = month), stat = "identity") +
+  scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) +
+  scale_y_continuous(name = "Passengers (Millions)") +
+  scale_fill_discrete(name = "Month")
+```
+
+```{r map, fig.height = 10, fig.width = 10}
+world <- map_data("world")
+cities <- world.cities
+
+remove_axes <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  )
+
+# Derive the cities and corresponding regions
+cities %<>%
+  filter(
+    (name == "San Francisco" & country.etc == "USA") |
+    (name == "Adelaide" & country.etc == "Australia") |
+    (name %in% c("Topeka", "Yellowknife", "Tegucigalpa", "Port-au-Prince",
+                       "Pontes e Lacerda", "Bambari", "Riyadh", "Mexico City",
+                       "Xining", "Ostrava"))
+    ) %>% 
+  mutate(region =
+           ifelse(name == "San Francisco", "SF",
+           ifelse(name == "Adelaide", "Australia / Oceania",
+           ifelse(name == "Topeka", "US",
+           ifelse(name == "Yellowknife", "Canada",
+           ifelse(name == "Tegucigalpa", "Central America",
+           ifelse(name == "Port-au-Prince", "Caribbean",
+           ifelse(name == "Pontes e Lacerda", "South America",
+           ifelse(name == "Bambari", "Africa",
+           ifelse(name == "Riyadh", "Middle East",
+           ifelse(name == "Mexico City", "Mexico",
+           ifelse(name == "Xining", "Asia",
+           ifelse(name == "Ostrava", "Europe", NA))))))))))))
+        )
+
+myCurve <- curveGrob(0, 0, 1, 1, default.units = "npc",
+               curvature = 0.2, angle = 90, ncp = 20, shape = 1,
+               square = FALSE, squareShape = 1,
+               inflect = FALSE, arrow = arrow(), open = TRUE,
+               debug = FALSE, name = NULL, gp = gpar(), vp = NULL)
+
+world %>% 
+  filter(region != "Antarctica") %>% 
+  ggplot() +
+  geom_polygon(aes(x = long, y = lat, group = group)) + 
+  geom_point(data = cities, aes(x = long, y = lat), color = "red", size = 3) +
+  coord_fixed(1.2) +
+  theme_minimal() +
+  geom_line(data = cities, aes(x = long, y = lat), color = "blue", size = 1) +
+  remove_axes
+
+# annotation_custom(grob = myCurve, 0, 100, 0, 100)
 ```
 
 
