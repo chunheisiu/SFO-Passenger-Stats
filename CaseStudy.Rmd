@@ -47,7 +47,7 @@ data$date %<>%
 
 ## Get month and year values
 data %<>% 
-  mutate(month = date %>% format("%b"),
+  mutate(month = date %>% format("%m") %>% factor(labels = month.name),
          year = date %>% format("%Y") %>% as.numeric())
 
 # Get min and max dates
