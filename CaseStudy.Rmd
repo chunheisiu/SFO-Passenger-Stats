@@ -45,10 +45,14 @@ data$date %<>%
   as.yearmon("%Y%m") %>% 
   as.Date()
 
-# Get min and max dates
-year_max <- max(data$date) %>% format("%Y") %>% as.numeric()
-year_min <- min(data$date) %>% format("%Y") %>% as.numeric()
+## Get month and year values
+data %<>% 
+  mutate(month = date %>% format("%b"),
+         year = date %>% format("%Y") %>% as.numeric())
 
+# Get min and max dates
+year_max <- max(data$year)
+year_min <- min(data$year)
 
 ## operAirline = Operating Airline, the airline that really operating, some airline would own a child company to operate a single route
 ## operCode = Operating Airline Code
@@ -62,4 +66,12 @@ year_min <- min(data$date) %>% format("%Y") %>% as.numeric()
 ## area: area within SFO terminal
 ## pax: passenger count of given row
 ```
+
+```{r graph}
+data %>% 
+  ggplot() +
+  geom_bar(aes(x = date)) +
+  scale_x_date(breaks = )
+```
+
 
