@@ -70,8 +70,7 @@ year_min <- min(data$year)
 ```{r graph}
 data %>% 
   ggplot() +
-  geom_bar(aes(x = date)) +
-  scale_x_date(breaks = )
+  geom_bar(aes(x = year, fill = month))
 ```
 
 
