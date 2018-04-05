@@ -40,3 +40,22 @@ ggplot() + geom_polygon(data = usa, aes(x=long,y=lat,group=group)) + coord_fixed
 #   theme_minimal() +
 #   remove_axes +
 #   guides(size = F)
+
+world %>% 
+  filter(region != "Antarctica") %>% 
+  ggplot() +
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
+  geom_point(data = world.cities %>% filter(country.etc == "Canada", lat > 55, long > -110),
+                               aes(x = long, y = lat), color = "black", size = 1) +
+  geom_text(data = world.cities %>% filter(country.etc == "Canada", lat > 55, long > -110),
+            aes(x = long, y = lat, label = name),
+            hjust = 0, nudge_x = 1, nudge_y = -1, color = "black", size = 2)
+
+world %>% 
+  filter(region %in% c("USA", "Canada", "Mexico")) %>% 
+  ggplot() +
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
+  draw_sf_point +
+  draw_sf_label +
+  coord_fixed(1.3) +
+  scale_x_continuous(limits = c(-170, -50))

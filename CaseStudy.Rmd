@@ -63,8 +63,10 @@ data %<>%
   mutate(month = date %>% format("%m") %>% factor(labels = month.name),
          year = date %>% format("%Y") %>% as.numeric())
 
-# Remove data from 2007 for easy comparison
-data %<>% filter(year != 2005) 
+# Remove data from 2005 for easy comparison
+data %<>% filter(year != 2005)
+
+data$region %<>% recode("Central America" = "Latin America", "South America" = "Latin America")
 
 ## operAirline = Operating Airline, the airline that really operating, some airline would own a child company to operate a single route
 ## operCode = Operating Airline Code
@@ -101,22 +103,19 @@ sf <- world.cities %>%
 cities %<>%
   filter(
     (name == "Adelaide" & country.etc == "Australia") |
-    (name %in% c("Topeka", "Saskatoon", "Tegucigalpa", "Port-au-Prince",
-                       "Pontes e Lacerda", "Bambari", "Riyadh", "Mexico City",
-                       "Shenzhen", "Ostrava"))
+    (name == "La Paz" & country.etc == "Bolivia") |
+    (name %in% c("Saint Louis", "La Ronge",
+                 "Riyadh", "Mexico City", "Shenzhen", "Ostrava"))
     ) %>% 
   mutate(region =
            ifelse(name == "Adelaide", "Australia / Oceania",
-           ifelse(name == "Topeka", "US",
-           ifelse(name == "Saskatoon", "Canada",
-           ifelse(name == "Tegucigalpa", "Central America",
-           ifelse(name == "Port-au-Prince", "Caribbean",
-           ifelse(name == "Pontes e Lacerda", "South America",
-           ifelse(name == "Bambari", "Africa",
+           ifelse(name == "Saint Louis", "US",
+           ifelse(name == "La Ronge", "Canada",
+           ifelse(name == "La Paz", "Latin America",
            ifelse(name == "Riyadh", "Middle East",
            ifelse(name == "Mexico City", "Mexico",
            ifelse(name == "Shenzhen", "Asia",
-           ifelse(name == "Ostrava", "Europe", NA)))))))))))
+           ifelse(name == "Ostrava", "Europe", NA))))))))
   ) %>% 
   full_join(y = data %>%
               mutate(region = as.character(region)) %>% 
@@ -127,25 +126,17 @@ cities %<>%
     origin.long = ifelse(type == "Enplaned", sf$long, long),
     dest.lat = ifelse(type == "Enplaned", lat, sf$lat),
     dest.long = ifelse(type == "Enplaned", long, sf$long)
-  )
+  ) %>% 
+  filter(type != "Thru / Transit")
 ```
 
-```{r draw_map, fig.width = 10}
-draw_flight_curve <- geom_curve(data = cities %>% filter(type %in% c("Deplaned", "Enplaned")),
-                           aes(x = origin.long, y = origin.lat, xend = dest.long, yend = dest.lat, color = type),
-                           curvature = 0.5, arrow = arrow(length = unit(0.025, "npc")), alpha = 0.6)
-
+```{r draw_map}
 draw_sf_point <- geom_point(x = sf$long, y = sf$lat, color = "red", size = 3)
 
 draw_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
                            hjust = 1, nudge_x = -5, color = "red", size = 3)
 
-draw_city_points <- geom_point(data = cities %>% filter(!(region %in% c("Africa", "Caribbean"))),
-             aes(x = long, y = lat), color = "black", size = 3)
-
-draw_city_labels <- geom_text(data = cities %>% filter(!(region %in% c("Africa", "Caribbean"))),
-            aes(x = long, y = lat, label = region),
-            hjust = 0, nudge_x = 3.5, nudge_y = -1, color = "black", size = 3)
+draw_color_legend <- scale_color_discrete(name = "Activity Type", labels = c("Arriving SFO", "Departing SFO"))
 
 remove_axes <- theme(
   axis.text = element_blank(),
@@ -155,19 +146,65 @@ remove_axes <- theme(
   panel.grid = element_blank(),
   axis.title = element_blank()
   )
+```
+
+```{r draw_na_map, fig.width = 10}
+cities_na <- cities %>% filter(region %in% c("US", "Canada", "Mexico"))
+
+draw_na_flight_curve <- geom_curve(data = cities_na %>% filter(type %in% c("Deplaned", "Enplaned")),
+                           aes(x = origin.long, y = origin.lat, xend = dest.long, yend = dest.lat,
+                               color = type, size = log(pax)),
+                           curvature = 0.5, lineend = "round", alpha = 0.5)
+
+draw_na_city_points <- geom_point(data = cities_na, aes(x = long, y = lat), color = "black", size = 3)
+
+draw_na_city_labels <- geom_text(data = cities_na, aes(x = long, y = lat, label = region),
+                              hjust = 0, nudge_x = 3.5, nudge_y = -1, color = "black", size = 3)
+
+world %>% 
+  filter(region %in% c("USA", "Canada", "Mexico")) %>% 
+  ggplot() +
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
+  draw_na_city_points +
+  draw_na_flight_curve +
+  draw_na_city_labels +
+  draw_sf_point +
+  draw_sf_label +
+  coord_fixed(1.3) +
+  theme_minimal() +
+  draw_color_legend +
+  scale_fill_brewer(palette = "Set2") +
+  scale_x_continuous(limits = c(-170, -50)) +
+  remove_axes
+```
+
+```{r draw_intl_map, fig.width = 10}
+cities_intl <- cities %>% filter(!(region %in% c("US", "Canada", "Mexico")))
+
+draw_intl_flight_curve <- geom_curve(data = cities_intl %>% filter(type %in% c("Deplaned", "Enplaned")),
+                           aes(x = origin.long, y = origin.lat, xend = dest.long, yend = dest.lat,
+                               color = type, size = log(pax)),
+                           curvature = 0.5, lineend = "round", alpha = 0.5)
+
+draw_intl_city_points <- geom_point(data = cities_intl, aes(x = long, y = lat), color = "black", size = 3)
+
+draw_intl_city_labels <- geom_text(data = cities_intl, aes(x = long, y = lat, label = region),
+                              hjust = 0, nudge_x = 3.5, nudge_y = -1, color = "black", size = 3)
 
 world %>% 
   filter(region != "Antarctica") %>% 
   ggplot() +
   geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
-  draw_city_points +
-  draw_flight_curve +
-  draw_city_labels +
+  draw_intl_city_points +
+  draw_intl_flight_curve +
+  draw_intl_city_labels +
   draw_sf_point +
   draw_sf_label +
   coord_fixed(1.3) +
   theme_minimal() +
-  scale_color_discrete(name = "Activity Type", labels = c("Arriving SFO", "Departing SFO")) +
+  draw_color_legend +
+  scale_x_continuous(limits = c(-170, 200)) +
+  scale_y_continuous(limits = c(-60, 90)) +
   remove_axes
 ```
 
