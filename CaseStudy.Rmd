@@ -42,9 +42,10 @@ data <- read.csv("Air_Traffic_Passenger_Statistics.csv")
 
 
 ## Part 2: Introduction to the Data
-First, let's clean the data.
+
 
 ```{r cleanup}
+# First, let's clean the data.
 # Rename the column names
 names(data) <- c("date", "operAirline", "operCode", "airline", "code", "isDomestic",
                  "region", "type", "category", "terminal", "area", "pax")
@@ -68,6 +69,7 @@ data %<>% filter(year != 2005)
 
 data$region %<>% recode("Central America" = "Latin America",
                         "South America" = "Latin America")
+data$category %<>% recode("Other" = "Full Service") 
 
 ## operAirline = Operating Airline, the airline that really operating, some airline would own a child company to operate a single route
 ## operCode = Operating Airline Code
@@ -82,7 +84,40 @@ data$region %<>% recode("Central America" = "Latin America",
 ## pax: passenger count of given row
 ```
 
-```{r bar_graph}
+```{r cleanup2}
+## Need to clean up incorrect data
+## Below has the list of low cost carrier
+## https://www.icao.int/sustainability/Documents/LCC-List.pdf
+## Merge "United Airlines - Pre 07/01/2013" to "United Airlines"
+data$airline %<>% recode("United Airlines - Pre 07/01/2013" = "United Airlines")
+## Remove the strip of "Emirates "
+data$airline %<>% recode("Emirates " = "Emirates")
+
+## Some airlines were wrongly identify in category, convert the below airlines to full service
+data[which(data$airline=="Air China"|
+          data$airline== "Air India Limited"|
+          data$airline=="Air New Zealand"|
+          data$airline=="Air Pacific Limited dba Fiji Airways"|
+          data$airline=="Emirates"| data$airline=="United Airlines" |
+          data$airline=="Virgin America" | data$airline == "Volaris Airlines" |
+          data$airline=="Delta Air Lines" | data$airline=="US Airways"),"category"]<-"Full Service"
+## Convert the below airlines to low cost carrier
+data[which(data$airline=="XL Airways France" | 
+             data$airline=="WOW Air"|
+             data$airline=="WestJet Airlines"),"category"] <- "Low Fare"
+```
+
+```{r data_explore_cleanup}
+## For data cleaning, some airline identify wrongly in category
+Non_lcc_list <- data %>% filter(category=="Low Fare") %>% count(airline)
+data %>% filter(category=="Low Fare" & airline=="Air China")
+data %>% filter(airline=="Swissport USA")
+airline_count <- data %>% count(airline)
+```
+
+
+
+```{r annual_pax_trend}
 data %>% 
   ggplot() +
   geom_bar(aes(x = year, y = pax / 1000000, fill = month), stat = "identity") +
@@ -90,6 +125,14 @@ data %>%
   scale_y_continuous(name = "Passengers (Millions)") +
   scale_fill_discrete(name = "Month")
 ```
+
+```{r average_month_pax}
+data %>% group_by(isDomestic,month) %>% summarise(avg_pax = mean(pax)) %>% 
+  ggplot(aes(x=month,y=avg_pax,fill=isDomestic)) + geom_bar(stat="identity")
+```
+
+
+
 
 ```{r map_setup}
 # Load the world map and cities
@@ -232,5 +275,9 @@ world %>%
   scale_x_continuous(limits = c(-170, 200)) +
   scale_y_continuous(limits = c(-60, 90)) +
   format_theme
+```
+
+```{r top_region}
+top_area <- data %>% group_by(region,airline) %>% summarise(pax_flow=sum(pax)) %>% top_n(1,pax_flow)
 ```
 
