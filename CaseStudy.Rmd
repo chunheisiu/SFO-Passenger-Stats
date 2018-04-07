@@ -292,6 +292,22 @@ world %>%
   format_theme
 ```
 
+
+III. Airline Overview
+
+```{r top5_domestic}
+top5_domestic_list <- data %>% filter(isDomestic) %>% group_by(airline) %>% summarise(local_pax=sum(pax)) %>% top_n(5,local_pax) %>% arrange(desc(local_pax))
+airline_what <- data %>% count(airline)
+top5_domestic_1 <- data %>% filter(airline==top5_domestic_list[1,1])
+filter(airline=="United Airlines")
+```
+
+```{r top_international}
+top5_intl_list <- data %>% filter(!isDomestic) %>% group_by(airline) %>% summarise(foreign_pax=sum(pax)) %>% top_n(5,foreign_pax) %>% arrange(desc(foreign_pax))
+```
+
+
+
 ```{r top_region}
 top_area <- data %>% group_by(region,airline) %>% summarise(pax_flow=sum(pax)) %>% top_n(1,pax_flow)
 ```
