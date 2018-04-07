@@ -18,6 +18,7 @@ library(scales)
 library(maps)
 library(mapdata)
 library(grid)
+library(treemapify)
 ```
 
 ```{r init, include = F}
@@ -128,7 +129,10 @@ data %>%
 
 ```{r average_month_pax}
 data %>% group_by(isDomestic,month) %>% summarise(avg_pax = mean(pax)) %>% 
-  ggplot(aes(x=month,y=avg_pax,fill=isDomestic)) + geom_bar(stat="identity")
+  ggplot(aes(x=month,y=avg_pax,fill=isDomestic)) + theme_minimal() +  geom_bar(stat="identity",alpha=0.8) + labs(x="Month",y="Passengers") + scale_y_continuous(labels = comma) + 
+  ggtitle("The Monthly Average Passengers Count") + theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_discrete(name = "Destination",label=c("International","Domestic")) +
+  theme(plot.title = element_text(size = 20, face = "bold"))
 ```
 
 
@@ -279,5 +283,15 @@ world %>%
 
 ```{r top_region}
 top_area <- data %>% group_by(region,airline) %>% summarise(pax_flow=sum(pax)) %>% top_n(1,pax_flow)
+```
+
+```{r terminal}
+data %>% group_by(terminal,airline) %>% summarise(all_pax=sum(pax)) %>% 
+  ggplot(aes(area=all_pax,fill=terminal,label=airline))+geom_treemap()+geom_treemap_text(
+    fontface = "italic",
+    colour = "white",
+    place = "centre",
+    grow = TRUE
+  )
 ```
 
