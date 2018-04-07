@@ -11,16 +11,23 @@ To-do-list:
 Goal: Overview 
   Text: After the graph show the average annual growth rate of pax
   Bar Chart:average month pax and Domestic and International travelers
+  Pie Chart: Enplane vs. deplane portion
   
 Goal: Destination
   Map: Passenger flows between SFO and continents
+  
+Goal: Airline Overall
+  Stacked Area Chart: Show the portion of top 5 airline in Domestic and International
   Map: Top airline from each region by passengers
 
 Goal: Low Cost Carrier vs Full Service Carrier
   Line Chart: Percentage of lcc pax vs normal pax
-  ?: LCC that serves International destinations
+  Map: LCC that serves International destinations
 
 Goal: Terminal Traffic
-  Tree Map: Terminal as subsection, airline pax?
+  Tree Map: Terminal as subsection, airline pax
 
-Goal: Aircrafts
+Goal: Focus on 1 Domestic Airline and 1 Non-North American Foreign Airline
+  Time Series Calenda Heatmap: United
+  Time Series Calenda Heatmap: Lufthansa
+
