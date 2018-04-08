@@ -295,17 +295,57 @@ world %>%
 
 III. Airline Overview
 
-```{r top5_domestic}
+```{r top5_domestic_list}
 top5_domestic_list <- data %>% filter(isDomestic) %>% group_by(airline) %>% summarise(local_pax=sum(pax)) %>% top_n(5,local_pax) %>% arrange(desc(local_pax))
-airline_what <- data %>% count(airline)
-top5_domestic_1 <- data %>% filter(airline==top5_domestic_list[1,1])
-filter(airline=="United Airlines")
 ```
 
-```{r top_international}
+```{r top5_domestic_area}
+transparent <- 0.9
+
+data %>% filter(isDomestic) %>% group_by(year) %>% 
+  summarise(domestic_pax=sum(pax)/1000000,
+            domestic_ua=sum(ifelse(code=="UA",pax,0)/1000000),
+            domestic_aa=sum(ifelse(code=="AA",pax,0)/1000000),
+            domestic_dl=sum(ifelse(code=="DL",pax,0)/1000000),
+            domestic_vx=sum(ifelse(code=="VX",pax,0)/1000000),
+            domestic_wn=sum(ifelse(code=="WN",pax,0)/1000000)
+            ) %>% 
+  ggplot(aes(x=year)) + geom_area(aes(y=domestic_pax,fill="domestic_pax"),alpha=transparent) + 
+  geom_area(aes(y=domestic_wn+domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_wn+domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) + 
+  geom_area(aes(y=domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) +
+  geom_area(aes(y=domestic_dl+domestic_aa+domestic_ua,fill="domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) +
+  geom_area(aes(y=domestic_aa+domestic_ua,fill="domestic_aa+domestic_ua"),alpha=transparent) +
+  geom_area(aes(y=domestic_ua,fill="domestic_ua"),alpha=transparent) +
+  scale_fill_discrete(name = "Airline",label=c("American Airlines","Delta Airlines","Other Airlines","United Airlines","Virgin America","Southwest Airlines")) + scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) + 
+  scale_y_continuous(name= "Passengers (Millions)", labels = comma) + theme_minimal() +
+  ggtitle("Passengers Count by Airlines") + theme(plot.title = element_text(hjust = 0.5)) 
+  
+```
+
+```{r top_international_list}
 top5_intl_list <- data %>% filter(!isDomestic) %>% group_by(airline) %>% summarise(foreign_pax=sum(pax)) %>% top_n(5,foreign_pax) %>% arrange(desc(foreign_pax))
 ```
 
+```{r top5_intl_area}
+data %>% filter(!isDomestic) %>% group_by(year) %>% 
+  summarise(intl_pax=sum(pax)/1000000,
+            intl_ua=sum(ifelse(code=="UA",pax,0)/1000000),
+            intl_ca=sum(ifelse(code=="CA",pax,0)/1000000),
+            intl_lh=sum(ifelse(code=="LH",pax,0)/1000000),
+            intl_cx=sum(ifelse(code=="CX",pax,0)/1000000),
+            intl_ba=sum(ifelse(code=="BA",pax,0)/1000000)
+            ) %>% 
+  ggplot(aes(x=year)) + geom_area(aes(y=intl_pax,fill="red"),alpha=transparent) + 
+  geom_area(aes(y=intl_ua+intl_ca+intl_lh+intl_cx+intl_ba,fill="green"),alpha=transparent) + 
+  geom_area(aes(y=intl_ua+intl_ca+intl_lh+intl_cx,fill="blue"),alpha=transparent) +
+  geom_area(aes(y=intl_ua+intl_ca+intl_lh,fill="pink"),alpha=transparent) +
+  geom_area(aes(y=intl_ua+intl_ca,fill="black"),alpha=transparent) +
+  geom_area(aes(y=intl_ua,fill="orange"),alpha=transparent) +
+  scale_fill_discrete(name = "Airline",label=c("Air Canada","Cathay Pacific","British Airways", "United Airlines","Luthansa","Other Airlines")) + scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) + 
+  scale_y_continuous(name= "Passengers (Millions)", labels = comma) + theme_minimal() +
+  ggtitle("Passengers Count by Airlines") + theme(plot.title = element_text(hjust = 0.5)) 
+  
+```
 
 
 ```{r top_region}
