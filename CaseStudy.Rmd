@@ -352,13 +352,39 @@ data %>% filter(!isDomestic) %>% group_by(year) %>%
 top_area <- data %>% group_by(region,airline) %>% summarise(pax_flow=sum(pax)) %>% top_n(1,pax_flow)
 ```
 
-```{r terminal}
-data %>% group_by(terminal,airline) %>% summarise(all_pax=sum(pax)) %>% 
-  ggplot(aes(area=all_pax,fill=terminal,label=airline))+geom_treemap()+geom_treemap_text(
-    fontface = "italic",
+IV. Terminal Traffic
+```{r terminal_domestic}
+data %>% filter(isDomestic) %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
+  ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
     colour = "white",
-    place = "centre",
-    grow = TRUE
+    place = "centre"
   )
+```
+
+```{r terminal_international}
+data %>% filter(!isDomestic & region!="Canada") %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
+  ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
+    colour = "white",
+    place = "centre"
+  )
+```
+
+
+```{r terminal}
+data %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
+  ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
+    colour = "white",
+    place = "centre"
+  )
+```
+
+
+VI. Airlines
+```{r united}
+data %>% filter(code=="UA") %>% group_by(month,year) %>% summarise(Passengers=sum(pax)) %>% ggplot(aes(x=month,y=year))+geom_tile(aes(fill=Passengers))+ theme_classic() + scale_fill_gradient(low="red",high="green") + scale_y_continuous(expand = c(0,0), name= "Year", breaks = seq(2006, 2017, by = 1)) + scale_x_discrete(name="Month",labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec")) + ggtitle("United Airlines Passengers Count") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r lufthansa}
+data %>% filter(code=="CX") %>% group_by(month,year) %>% summarise(Passengers=sum(pax)) %>% ggplot(aes(x=month,y=year))+geom_tile(aes(fill=Passengers))+ theme_classic() + scale_fill_gradient(low="red",high="green") + scale_y_continuous(expand = c(0,0), name= "Year", breaks = seq(2006, 2017, by = 1)) + scale_x_discrete(name="Month",labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec")) + ggtitle("Because Airlines Passengers Count") + theme(plot.title = element_text(hjust = 0.5))
 ```
 
