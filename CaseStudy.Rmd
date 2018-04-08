@@ -1,8 +1,8 @@
 ---
 title: "BSDS 100 Case Study"
 author: "Jacques Sham & Charles Siu"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: pdf_document
+date: 
+output: html_document
 ---
 
 ```{r setup, include = F}
