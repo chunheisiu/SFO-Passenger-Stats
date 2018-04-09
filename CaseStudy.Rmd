@@ -44,7 +44,6 @@ data <- read.csv("Air_Traffic_Passenger_Statistics.csv")
 
 ## Part 2: Introduction to the Data
 
-
 ```{r cleanup}
 # First, let's clean the data.
 # Rename the column names
@@ -108,7 +107,7 @@ data[which(data$airline=="XL Airways France" |
              data$airline=="WestJet Airlines"),"category"] <- "Low Fare"
 ```
 
-```{r data_explore_cleanup}
+```{r data_explore_cleanup, eval = F}
 ## For data cleaning, some airline identify wrongly in category
 Non_lcc_list <- data %>% filter(category=="Low Fare") %>% count(airline)
 data %>% filter(category=="Low Fare" & airline=="Air China")
@@ -118,9 +117,10 @@ pax_count <- data %>% filter(year==2017) %>% group_by(airline) %>% summarise(pax
 
 ```
 
-I. Overview
+### I. Overview
 
-Overall passenger traffic between 2006 and 2017
+#### Overall passenger traffic between 2006 and 2017
+
 ```{r annual_pax_trend}
 data %>% 
   ggplot() +
@@ -130,7 +130,8 @@ data %>%
   scale_fill_discrete(name = "Month")
 ```
 
-Average passenger traffic between 2006 and 2017
+#### Average passenger traffic between 2006 and 2017
+
 ```{r average_month_pax}
 data %>% group_by(isDomestic,month) %>% summarise(avg_pax = round(mean(pax),digit =0)) %>% 
   ggplot(aes(x=month,y=avg_pax,fill=isDomestic,label = avg_pax)) + theme_minimal() +  geom_bar(stat="identity",alpha=0.8) + labs(x="Month",y="Passengers") + scale_y_continuous(labels = comma) + 
@@ -139,7 +140,8 @@ data %>% group_by(isDomestic,month) %>% summarise(avg_pax = round(mean(pax),digi
   theme(plot.title = element_text(size = 20, face = "bold")) + geom_text(size = 4, position = position_stack(vjust = 0.85), colour = "white")
 ```
 
-Activity Type
+#### Activity Type
+
 ```{r traffic_type}
 total_traffic <- data %>% summarise(total_traffic = sum(pax))
 data %>% group_by(type) %>% summarise(traffic = sum(pax)) %>% 
@@ -147,7 +149,7 @@ data %>% group_by(type) %>% summarise(traffic = sum(pax)) %>%
 ```
 
 
-II. Destination
+### II. Destination
 
 ```{r map_setup}
 # Load the world map and cities
@@ -293,7 +295,7 @@ world %>%
 ```
 
 
-III. Airline Overview
+### III. Airline Overview
 
 ```{r top5_domestic_list}
 top5_domestic_list <- data %>% filter(isDomestic) %>% group_by(airline) %>% summarise(local_pax=sum(pax)) %>% top_n(5,local_pax) %>% arrange(desc(local_pax))
@@ -352,7 +354,8 @@ data %>% filter(!isDomestic) %>% group_by(year) %>%
 top_area <- data %>% group_by(region,airline) %>% summarise(pax_flow=sum(pax)) %>% top_n(1,pax_flow)
 ```
 
-IV. Terminal Traffic
+### IV. Terminal Traffic
+
 ```{r terminal_domestic}
 data %>% filter(isDomestic) %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
   ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
@@ -378,8 +381,8 @@ data %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>%
   )
 ```
 
+### VI. Airlines
 
-VI. Airlines
 ```{r united}
 data %>% filter(code=="UA") %>% group_by(month,year) %>% summarise(Passengers=sum(pax)) %>% ggplot(aes(x=month,y=year))+geom_tile(aes(fill=Passengers))+ theme_classic() + scale_fill_gradient(low="red",high="green") + scale_y_continuous(expand = c(0,0), name= "Year", breaks = seq(2006, 2017, by = 1)) + scale_x_discrete(name="Month",labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec")) + ggtitle("United Airlines Passengers Count") + theme(plot.title = element_text(hjust = 0.5))
 ```
