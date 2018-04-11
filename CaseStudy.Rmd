@@ -118,15 +118,25 @@ pax_count <- data %>% filter(year==2017) %>% group_by(airline) %>% summarise(pax
 
 ### I. Overview
 
+```{r global_theme}
+format_title <- theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+format_legend_title <- theme(legend.title = element_text(face = "bold"))
+```
+
+
 #### Overall passenger traffic between 2006 and 2017
 
 ```{r annual_pax_trend}
 data %>% 
   ggplot() +
   geom_bar(aes(x = year, y = pax / 1000000, fill = month), stat = "identity") +
+  theme_minimal() +
   scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) +
   scale_y_continuous(name = "Passengers (Millions)") +
-  scale_fill_discrete(name = "Month")
+  scale_fill_discrete(name = "Month") +
+  ggtitle("The Monthly Average Passengers Count") +
+  format_title +
+  format_legend_title
 ```
 
 #### Average passenger traffic between 2006 and 2017
@@ -135,16 +145,17 @@ data %>%
 data %>%
   group_by(isDomestic, month) %>%
   summarise(avg_pax = round(mean(pax), digit = 0)) %>% 
-  ggplot(aes(x = factor(month, labels = month.abb), y = avg_pax, fill = isDomestic, label = avg_pax)) +
-  theme_minimal() +
+  ggplot(aes(x = factor(month, labels = month.abb), y = avg_pax, fill = isDomestic)) +
   geom_bar(stat = "identity", alpha = 0.8) +
-  labs(x = "Month",y = "Passengers") +
+  theme_minimal() +
   scale_y_continuous(labels = comma) + 
-  ggtitle("The Monthly Average Passengers Count") +
-  theme(plot.title = element_text(hjust = 0.5)) +
   scale_fill_discrete(name = "Destination", label = c("International","Domestic")) +
-  theme(plot.title = element_text(size = 20, face = "bold")) +
-  geom_text(size = 3, position = position_stack(vjust = 0.5), colour = "white")
+  labs(x = "Month", y = "Passengers") +
+  ggtitle("Monthly Average Passengers Count") +
+  geom_text(aes(label = format(avg_pax, big.mark = ",")), size = 2.75,
+            position = position_stack(vjust = 0.5), colour = "white") +
+  format_title +
+  format_legend_title
 ```
 
 #### Activity Type
@@ -156,13 +167,13 @@ data %>%
   summarise(traffic = sum(pax)) %>% 
   ggplot(aes(x = "", y = traffic, fill = type)) +
   geom_bar(width = 1 , stat = "identity") +
-  coord_polar(theta = "y") +
+  geom_text(aes(x = 1, y = cumsum(traffic) - traffic / 2, label = percent(traffic / total_traffic[1,1]))) +
   theme_void() +
-  geom_text(aes(x = 1, y = cumsum(traffic) - traffic / 2,
-                label = paste(100 * round(traffic / total_traffic[1,1], digit = 4), "%", sep = ""))) +
-  scale_fill_brewer(palette = "Set2", name = "", label = c("Arrival", "Departure", "Transit")) +
-  ggtitle("Airplane Activities") +
-  theme(plot.title = element_text(hjust = 0.6, size = 20, face = "bold"))
+  scale_fill_brewer(palette = "Set2", name = "Activity Type", label = c("Arrival", "Departure", "Transit")) +
+  ggtitle("Percentage of Airplane Activities") +
+  coord_polar(theta = "y") +
+  format_title +
+  format_legend_title
 ```
 
 
@@ -285,6 +296,7 @@ world %>%
   draw_size_legend +
   scale_fill_brewer(palette = "Set2") +
   scale_x_continuous(limits = c(-170, -50)) +
+  ggtitle("Passengers Count by North American Destinations") +
   format_theme
 ```
 
@@ -308,6 +320,7 @@ world %>%
   draw_size_legend +
   scale_x_continuous(limits = c(-170, 200)) +
   scale_y_continuous(limits = c(-60, 90)) +
+  ggtitle("Passengers Count by International Destinations") +
   format_theme
 ```
 

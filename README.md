@@ -7,11 +7,11 @@ Case Study: Air Traffic Passenger Statistics
 
 
 ##### To-do List:
-* [ ] No more than 250 words explaining, with extreme concision, your data and findings!!
+* [ ] No more than 250 words explaining, with extreme concision, your data and findings
 
 * Goal: Overview
   * [x] Text: After the graph show the average annual growth rate of pax
-  * [x] Bar Chart:average month pax and Domestic and International travelers
+  * [x] Bar Chart: average month pax and Domestic and International travelers
   * [x] Pie Chart: Enplane vs. deplane portion
 
 * Goal: Destination
