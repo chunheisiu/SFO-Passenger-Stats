@@ -1,12 +1,13 @@
 ---
 title: "BSDS 100 Case Study"
 author: "Jacques Sham & Charles Siu"
-date: 
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 ---
 
 ```{r setup, include = F}
 knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(fig.width = 10)
 ```
 
 ```{r libraries, include = F, warning = F}
@@ -168,10 +169,10 @@ data %>%
   ggplot(aes(x = "", y = traffic, fill = type)) +
   geom_bar(width = 1 , stat = "identity") +
   geom_text(aes(x = 1, y = cumsum(traffic) - traffic / 2, label = percent(traffic / total_traffic[1,1]))) +
+  coord_polar(theta = "y") +
   theme_void() +
   scale_fill_brewer(palette = "Set2", name = "Activity Type", label = c("Arrival", "Departure", "Transit")) +
   ggtitle("Percentage of Airplane Activities") +
-  coord_polar(theta = "y") +
   format_title +
   format_legend_title
 ```
@@ -217,13 +218,19 @@ cities %<>%
     dest.long = ifelse(type == "Enplaned", long, sf$long)
   ) %>% 
   filter(type != "Thru / Transit")
+
+cities_na <- cities %>% filter(region %in% c("US", "Canada", "Mexico"))
+cities_intl <- cities %>% filter(!(region %in% c("US", "Canada", "Mexico")))
 ```
 
 ```{r draw_map}
 # Geom objects for drawing static objects
 draw_sf_point <- geom_point(x = sf$long, y = sf$lat, color = "red", size = 3)
 
-draw_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
+draw_na_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
+                           hjust = 1, nudge_x = -2, color = "red", size = 3)
+
+draw_intl_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
                            hjust = 1, nudge_x = -5, color = "red", size = 3)
 
 draw_color_legend <- scale_color_discrete(name = "Activity Type",
@@ -245,23 +252,29 @@ draw_city_points <- function(d) {
   return (geom_point(data = d, aes(x = long, y = lat), color = "black", size = 3))
 }
 
-draw_city_labels <- function(d) {
-  return (geom_text(data = d, aes(x = long, y = lat, label = region),
+draw_na_city_labels <- geom_text(data = cities_na, aes(x = long, y = lat, label = region),
+                              hjust = 0, nudge_x = 2, nudge_y = -0.5,
+                              color = "black", size = 3)
+
+draw_intl_city_labels <- geom_text(data = cities_intl, aes(x = long, y = lat, label = region),
                               hjust = 0, nudge_x = 3.5, nudge_y = -1,
-                              color = "black", size = 3))
-}
+                              color = "black", size = 3)
 
-draw_enplaned_labels <- function(d) {
-  return (geom_text(data = d %>% filter(type == ("Enplaned")),
-                    aes(x = long, y = lat, label = pax, color = type),
-                    hjust = 0, nudge_x = 3.5, nudge_y = -2.5, size = 3))
-}
+draw_na_enplaned_labels <- geom_label(data = cities_na %>% filter(type == ("Enplaned")),
+                                  aes(x = long, y = lat, label = format(pax, big.mark = ","), color = type),
+                                  hjust = 0, nudge_x = 2, nudge_y = -2.5, size = 3, show.legend = F)
 
-draw_deplaned_labels <- function(d) {
-  return (geom_text(data = d %>% filter(type == ("Deplaned")),
-                    aes(x = long, y = lat, label = pax, color = type),
-                    hjust = 0, nudge_x = 3.5, nudge_y = -4, size = 3))
-}
+draw_na_deplaned_labels <- geom_label(data = cities_na %>% filter(type == ("Deplaned")),
+                                 aes(x = long, y = lat - 4, label = format(pax, big.mark = ","), color = type),
+                                 hjust = 0, nudge_x = 2, nudge_y = -.75, size = 3, show.legend = F)
+
+draw_intl_enplaned_labels <- geom_label(data = cities_intl %>% filter(type == ("Enplaned")),
+                                  aes(x = long, y = lat, label = format(pax, big.mark = ","), color = type),
+                                  hjust = 0, nudge_x = 3.5, nudge_y = -7, size = 3, show.legend = F)
+
+draw_intl_deplaned_labels <-geom_label(data = cities_intl %>% filter(type == ("Deplaned")),
+                                 aes(x = long, y = lat - 4, label = format(pax, big.mark = ","), color = type),
+                                 hjust = 0, nudge_x = 3.5, nudge_y = -9.5, size = 3, show.legend = F)
 
 format_theme <- theme(
   axis.text = element_blank(),
@@ -277,19 +290,17 @@ format_theme <- theme(
 ```
 
 ```{r draw_na_map, fig.height = 8, fig.width = 10}
-cities_na <- cities %>% filter(region %in% c("US", "Canada", "Mexico"))
-
 world %>% 
   filter(region %in% c("USA", "Canada", "Mexico")) %>% 
   ggplot() +
   geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
   draw_flight_curve(cities_na) +
   draw_city_points(cities_na) +
-  draw_city_labels(cities_na) +
-  draw_enplaned_labels(cities_na) +
-  draw_deplaned_labels(cities_na) +
+  draw_na_city_labels +
   draw_sf_point +
-  draw_sf_label +
+  draw_na_sf_label +
+  draw_na_enplaned_labels +
+  draw_na_deplaned_labels +
   coord_fixed(1.3) +
   theme_minimal() +
   draw_color_legend +
@@ -297,23 +308,22 @@ world %>%
   scale_fill_brewer(palette = "Set2") +
   scale_x_continuous(limits = c(-170, -50)) +
   ggtitle("Passengers Count by North American Destinations") +
-  format_theme
+  format_theme +
+  format_title
 ```
 
 ```{r draw_intl_map, fig.height = 8, fig.width = 10}
-cities_intl <- cities %>% filter(!(region %in% c("US", "Canada", "Mexico")))
-
 world %>% 
   filter(region != "Antarctica") %>% 
   ggplot() +
   geom_polygon(aes(x = long, y = lat, group = group), fill = "darkgray") +
   draw_flight_curve(cities_intl) +
   draw_city_points(cities_intl) +
-  draw_city_labels(cities_intl) +
-  draw_enplaned_labels(cities_intl) +
-  draw_deplaned_labels(cities_intl) +
+  draw_intl_city_labels +
   draw_sf_point +
-  draw_sf_label +
+  draw_intl_sf_label +
+  draw_intl_enplaned_labels +
+  draw_intl_deplaned_labels +
   coord_fixed(1.3) +
   theme_minimal() +
   draw_color_legend +
@@ -321,14 +331,20 @@ world %>%
   scale_x_continuous(limits = c(-170, 200)) +
   scale_y_continuous(limits = c(-60, 90)) +
   ggtitle("Passengers Count by International Destinations") +
-  format_theme
+  format_theme +
+  format_title
 ```
 
 
 ### III. Airline Overview
 
 ```{r top5_domestic_list}
-top5_domestic_list <- data %>% filter(isDomestic) %>% group_by(airline) %>% summarise(local_pax=sum(pax)) %>% top_n(5,local_pax) %>% arrange(desc(local_pax))
+top5_domestic_list <- data %>%
+  filter(isDomestic) %>%
+  group_by(code) %>%
+  summarise(local_pax = sum(pax)) %>%
+  top_n(5, local_pax) %>%
+  arrange(desc(local_pax))
 ```
 
 ```{r top5_domestic_area}
@@ -338,11 +354,11 @@ data %>%
   filter(isDomestic) %>%
   group_by(year) %>% 
   summarise(domestic_pax = sum(pax) / 1000000,
-            domestic_ua = sum(ifelse(code == "UA", pax,0) / 1000000),
-            domestic_aa = sum(ifelse(code == "AA", pax,0) / 1000000),
-            domestic_dl = sum(ifelse(code == "DL", pax,0) / 1000000),
-            domestic_vx = sum(ifelse(code == "VX", pax,0) / 1000000),
-            domestic_wn = sum(ifelse(code == "WN", pax,0) / 1000000)
+            domestic_ua = sum(ifelse(code == "UA", pax, 0) / 1000000),
+            domestic_aa = sum(ifelse(code == "AA", pax, 0) / 1000000),
+            domestic_dl = sum(ifelse(code == "DL", pax, 0) / 1000000),
+            domestic_vx = sum(ifelse(code == "VX", pax, 0) / 1000000),
+            domestic_wn = sum(ifelse(code == "WN", pax, 0) / 1000000)
             ) %>% 
   ggplot(aes(x = year)) +
   geom_area(aes(y = domestic_pax, fill = "domestic_pax"), alpha=transparent) + 
