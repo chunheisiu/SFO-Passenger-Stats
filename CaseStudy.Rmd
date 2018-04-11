@@ -114,7 +114,6 @@ data %>% filter(category=="Low Fare" & airline=="Air China")
 data %>% filter(airline=="Swissport USA")
 airline_count <- data %>% count(airline)
 pax_count <- data %>% filter(year==2017) %>% group_by(airline) %>% summarise(pax_total = sum(pax))
-
 ```
 
 ### I. Overview
@@ -133,19 +132,37 @@ data %>%
 #### Average passenger traffic between 2006 and 2017
 
 ```{r average_month_pax}
-data %>% group_by(isDomestic,month) %>% summarise(avg_pax = round(mean(pax),digit =0)) %>% 
-  ggplot(aes(x=month,y=avg_pax,fill=isDomestic,label = avg_pax)) + theme_minimal() +  geom_bar(stat="identity",alpha=0.8) + labs(x="Month",y="Passengers") + scale_y_continuous(labels = comma) + 
-  ggtitle("The Monthly Average Passengers Count") + theme(plot.title = element_text(hjust = 0.5)) +
-  scale_fill_discrete(name = "Destination",label=c("International","Domestic")) +
-  theme(plot.title = element_text(size = 20, face = "bold")) + geom_text(size = 4, position = position_stack(vjust = 0.85), colour = "white")
+data %>%
+  group_by(isDomestic, month) %>%
+  summarise(avg_pax = round(mean(pax), digit = 0)) %>% 
+  ggplot(aes(x = factor(month, labels = month.abb), y = avg_pax, fill = isDomestic, label = avg_pax)) +
+  theme_minimal() +
+  geom_bar(stat = "identity", alpha = 0.8) +
+  labs(x = "Month",y = "Passengers") +
+  scale_y_continuous(labels = comma) + 
+  ggtitle("The Monthly Average Passengers Count") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_discrete(name = "Destination", label = c("International","Domestic")) +
+  theme(plot.title = element_text(size = 20, face = "bold")) +
+  geom_text(size = 3, position = position_stack(vjust = 0.5), colour = "white")
 ```
 
 #### Activity Type
 
 ```{r traffic_type}
 total_traffic <- data %>% summarise(total_traffic = sum(pax))
-data %>% group_by(type) %>% summarise(traffic = sum(pax)) %>% 
-  ggplot(aes(x="",y=traffic,fill=type)) + geom_bar(width =1,stat="identity") + coord_polar(theta = "y") +theme_void() +geom_text(aes(x=1,y=cumsum(traffic)-traffic/2,label=paste(100*round(traffic/total_traffic[1,1],digit=4),"%",sep=""))) + scale_fill_discrete(name= NULL, label=c("Arrival","Department","Transit")) + ggtitle("Airplane Activities") + theme(plot.title = element_text(hjust = 0.6,size=20,face="bold"))
+data %>%
+  group_by(type) %>%
+  summarise(traffic = sum(pax)) %>% 
+  ggplot(aes(x = "", y = traffic, fill = type)) +
+  geom_bar(width = 1 , stat = "identity") +
+  coord_polar(theta = "y") +
+  theme_void() +
+  geom_text(aes(x = 1, y = cumsum(traffic) - traffic / 2,
+                label = paste(100 * round(traffic / total_traffic[1,1], digit = 4), "%", sep = ""))) +
+  scale_fill_brewer(palette = "Set2", name = "", label = c("Arrival", "Departure", "Transit")) +
+  ggtitle("Airplane Activities") +
+  theme(plot.title = element_text(hjust = 0.6, size = 20, face = "bold"))
 ```
 
 
@@ -304,16 +321,19 @@ top5_domestic_list <- data %>% filter(isDomestic) %>% group_by(airline) %>% summ
 ```{r top5_domestic_area}
 transparent <- 0.9
 
-data %>% filter(isDomestic) %>% group_by(year) %>% 
-  summarise(domestic_pax=sum(pax)/1000000,
-            domestic_ua=sum(ifelse(code=="UA",pax,0)/1000000),
-            domestic_aa=sum(ifelse(code=="AA",pax,0)/1000000),
-            domestic_dl=sum(ifelse(code=="DL",pax,0)/1000000),
-            domestic_vx=sum(ifelse(code=="VX",pax,0)/1000000),
-            domestic_wn=sum(ifelse(code=="WN",pax,0)/1000000)
+data %>%
+  filter(isDomestic) %>%
+  group_by(year) %>% 
+  summarise(domestic_pax = sum(pax) / 1000000,
+            domestic_ua = sum(ifelse(code == "UA", pax,0) / 1000000),
+            domestic_aa = sum(ifelse(code == "AA", pax,0) / 1000000),
+            domestic_dl = sum(ifelse(code == "DL", pax,0) / 1000000),
+            domestic_vx = sum(ifelse(code == "VX", pax,0) / 1000000),
+            domestic_wn = sum(ifelse(code == "WN", pax,0) / 1000000)
             ) %>% 
-  ggplot(aes(x=year)) + geom_area(aes(y=domestic_pax,fill="domestic_pax"),alpha=transparent) + 
-  geom_area(aes(y=domestic_wn+domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_wn+domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) + 
+  ggplot(aes(x = year)) +
+  geom_area(aes(y = domestic_pax, fill = "domestic_pax"), alpha=transparent) + 
+  geom_area(aes(y = domestic_wn + domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_wn+domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) + 
   geom_area(aes(y=domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) +
   geom_area(aes(y=domestic_dl+domestic_aa+domestic_ua,fill="domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) +
   geom_area(aes(y=domestic_aa+domestic_ua,fill="domestic_aa+domestic_ua"),alpha=transparent) +
