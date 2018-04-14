@@ -167,13 +167,16 @@ data %>%
 #### Activity Type
 
 ```{r traffic_type}
-total_traffic <- data %>% summarise(total_traffic = sum(pax))
+total_traffic <- data %>%
+  summarise(total_traffic = sum(pax)) %>% 
+  as.numeric()
+
 data %>%
   group_by(type) %>%
   summarise(traffic = sum(pax)) %>% 
   ggplot(aes(x = "", y = traffic, fill = type)) +
   geom_bar(width = 1 , stat = "identity") +
-  geom_text(aes(x = 1, y = cumsum(traffic) - traffic / 2, label = percent(traffic / total_traffic[1,1]))) +
+  geom_text(aes(x = 1, y = cumsum(traffic) - traffic / 2, label = percent(traffic / total_traffic))) +
   coord_polar(theta = "y") +
   theme_void() +
   scale_fill_brewer(palette = "Set2", name = "Activity Type", label = c("Arrival", "Departure", "Transit")) +
@@ -375,7 +378,7 @@ data %>%
           summarize(year = min(year) - 1) %>%
           filter(year == min(data$year)) %>%
           mutate(sum = 0)) %>% 
-  mutate(airline = factor(airline, levels = rbind(top5_domestic_list, "Other Airlines")$airline)) %>% 
+  mutate(airline = factor(airline, levels = rbind(top5_dom_list, "Other Airlines")$airline)) %>% 
   ggplot() +
   geom_area(aes(x = year, y = sum / million, fill = airline), alpha = 0.75) +
   scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
