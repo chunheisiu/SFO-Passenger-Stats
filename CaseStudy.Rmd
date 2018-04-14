@@ -11,8 +11,8 @@ knitr::opts_chunk$set(fig.width = 10)
 ```
 
 ```{r libraries, include = F, warning = F, message = F}
-library(tidyverse)
-library(magrittr)
+suppressMessages(library(tidyverse))
+suppressMessages(library(magrittr))
 library(zoo)
 library(ggplot2)
 library(scales)
@@ -35,7 +35,7 @@ if ("chunheisiu" %in% curr_wd) {
 }
 
 ## Read the data
-data <- read_csv("Air_Traffic_Passenger_Statistics.csv")
+data <- suppressMessages(read_csv("Air_Traffic_Passenger_Statistics.csv"))
 ```
 
 ## Part 1: Executive Summary
@@ -76,8 +76,6 @@ data$region %<>% recode("Central America" = "Latin America",
                         "South America" = "Latin America")
 data$category %<>% recode("Other" = "Full Service") 
 
-## operAirline = Operating Airline, the airline that really operating, some airline would own a child company to operate a single route
-## operCode = Operating Airline Code
 ## airline = Published Airline, mother company airline
 ## code = Published Airline Code, code for variable "airline"
 ## isDomestic: If the flight is domestic,T; if international: F
@@ -93,13 +91,15 @@ data$category %<>% recode("Other" = "Full Service")
 ## Need to clean up incorrect data
 ## Below has the list of low cost carrier
 ## https://www.icao.int/sustainability/Documents/LCC-List.pdf
-## Merge "United Airlines - Pre 07/01/2013" to "United Airlines"
+
+# Merge "United Airlines - Pre 07/01/2013" to "United Airlines"
 data$airline %<>% recode("United Airlines - Pre 07/01/2013" = "United Airlines")
-## Remove the strip of "Emirates "
+
+# Remove the strip of "Emirates "
 data$airline %<>% recode("Emirates " = "Emirates")
 
-## Some airlines were wrongly identified in category
-## Convert the below airlines to full service/Low Fare
+# Some airlines were wrongly identified in category
+# Convert the below airlines to full service/Low Fare
 full_svc_airline <- c("Air China", "Air India Limited", "Air New Zealand", "Air Pacific Limited dba Fiji Airways",
                       "Emirates", "United Airlines", "Virgin America", "Volaris Airlines", "Delta Air Lines",
                       "US Airways")
@@ -110,13 +110,21 @@ data %<>%
   mutate(cat_temp = ifelse(airline %in% full_svc_airline, "Full Service", 
                     ifelse(airline %in% lcc_svc_airline, "Low Fare", as.character(category)))) %>% 
   mutate(category = as.factor(cat_temp))
+
+# Change terminal into factor
+data %<>%
+  mutate(terminal = factor(terminal, levels = c("Terminal 1", "Terminal 2", "Terminal 3", "International", "Other")))
 ```
 
 
 ### I. Overview
 
-```{r global_theme}
+```{r global_vars}
 million <- 1000000
+```
+
+
+```{r global_theme}
 format_title <- theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
 format_legend_title <- theme(legend.title = element_text(face = "bold"))
 ```
@@ -286,7 +294,7 @@ format_theme <- theme(
   )
 ```
 
-```{r draw_na_map, fig.height = 8, fig.width = 10}
+```{r draw_na_map, fig.height = 8}
 world %>% 
   filter(region %in% c("USA", "Canada", "Mexico")) %>% 
   ggplot() +
@@ -309,7 +317,7 @@ world %>%
   format_title
 ```
 
-```{r draw_intl_map, fig.height = 8, fig.width = 10}
+```{r draw_intl_map, fig.height = 8}
 world %>% 
   filter(region != "Antarctica") %>% 
   ggplot() +
@@ -335,9 +343,9 @@ world %>%
 
 ### III. Airline Overview
 
-```{r top5_domestic_list}
+```{r top5_dom_list}
 # Filter the top 5 airlines by domestic passenger count
-top5_domestic_list <- data %>%
+top5_dom_list <- data %>%
   filter(isDomestic) %>%
   group_by(airline) %>%
   summarise(total_pax = sum(pax)) %>%
@@ -345,121 +353,167 @@ top5_domestic_list <- data %>%
   arrange(total_pax) %>% 
   select(-total_pax)
 
+# Combine and compute the other airlines
 other_dom_airline <- data %>% 
-  filter(!(airline %in% top5_domestic_list$airline)) %>% 
+  filter(!(airline %in% top5_dom_list$airline)) %>% 
   group_by(year) %>% 
   summarise(sum = sum(pax)) %>% 
   mutate(airline = "Other Airlines") %>% 
   select(airline, year, sum)
 ```
 
-```{r top5_domestic_area}
-transparent <- 0.9
-
+```{r top5_dom_area}
 data %>%
   group_by(airline, year) %>% 
   summarize(sum = sum(pax)) %>% 
-  right_join(top5_domestic_list, by = "airline") %>%
+  right_join(top5_dom_list, by = "airline") %>%
   ungroup() %>% 
   rbind(other_dom_airline) %>%
+  rbind(data %>%
+          group_by(airline) %>%
+          right_join(top5_dom_list, by = "airline") %>%
+          summarize(year = min(year) - 1) %>%
+          filter(year == min(data$year)) %>%
+          mutate(sum = 0)) %>% 
   mutate(airline = factor(airline, levels = rbind(top5_domestic_list, "Other Airlines")$airline)) %>% 
   ggplot() +
   geom_area(aes(x = year, y = sum / million, fill = airline), alpha = 0.75) +
-  scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) +
-  scale_y_continuous(name= "Passengers (Millions)") +
-  scale_fill_brewer(palette = "Set2") +
+  scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+  scale_y_continuous(name = "Passengers (Millions)") +
+  scale_fill_brewer(name = "Airline", palette = "Set2") +
   theme_minimal() +
-  ggtitle("Passengers Count by Airlines") +
-  format_title
-
-
-# data %>%
-#   filter(isDomestic) %>%
-#   group_by(year) %>% 
-#   summarise(domestic_pax = sum(pax) / 1000000,
-#             domestic_ua = sum(ifelse(code == "UA", pax, 0) / 1000000),
-#             domestic_aa = sum(ifelse(code == "AA", pax, 0) / 1000000),
-#             domestic_dl = sum(ifelse(code == "DL", pax, 0) / 1000000),
-#             domestic_vx = sum(ifelse(code == "VX", pax, 0) / 1000000),
-#             domestic_wn = sum(ifelse(code == "WN", pax, 0) / 1000000)
-#             ) %>% 
-#   ggplot(aes(x = year)) +
-#   geom_area(aes(y = domestic_pax, fill = "domestic_pax"), alpha=transparent) + 
-#   geom_area(aes(y = domestic_wn + domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_wn+domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) + 
-#   geom_area(aes(y=domestic_vx+domestic_dl+domestic_aa+domestic_ua,fill="domestic_vx+domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) +
-#   geom_area(aes(y=domestic_dl+domestic_aa+domestic_ua,fill="domestic_dl+domestic_aa+domestic_ua"),alpha=transparent) +
-#   geom_area(aes(y=domestic_aa+domestic_ua,fill="domestic_aa+domestic_ua"),alpha=transparent) +
-#   geom_area(aes(y=domestic_ua,fill="domestic_ua"),alpha=transparent) +
-#   scale_fill_discrete(name = "Airline",label=c("American Airlines","Delta Airlines","Other Airlines","United Airlines","Virgin America","Southwest Airlines")) + scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) + 
-#   scale_y_continuous(name= "Passengers (Millions)", labels = comma) + theme_minimal() +
-#   ggtitle("Passengers Count by Airlines") + theme(plot.title = element_text(hjust = 0.5)) 
-  
+  ggtitle("Domestic Passengers Count by Airline") +
+  format_title +
+  format_legend_title
 ```
 
-```{r top_international_list}
-top5_intl_list <- data %>% filter(!isDomestic) %>% group_by(airline) %>% summarise(foreign_pax=sum(pax)) %>% top_n(5,foreign_pax) %>% arrange(desc(foreign_pax))
+```{r top_intl_list}
+# Filter the top 5 airlines by international passenger count
+top5_intl_list <- data %>%
+  filter(!isDomestic) %>%
+  group_by(airline) %>%
+  summarise(total_pax = sum(pax)) %>%
+  top_n(5, total_pax) %>%
+  arrange(total_pax) %>% 
+  select(-total_pax)
+
+# Combine and compute the other airlines
+other_intl_airline <- data %>% 
+  filter(!(airline %in% top5_intl_list$airline)) %>% 
+  group_by(year) %>% 
+  summarise(sum = sum(pax)) %>% 
+  mutate(airline = "Other Airlines") %>% 
+  select(airline, year, sum)
 ```
 
 ```{r top5_intl_area}
-data %>% filter(!isDomestic) %>% group_by(year) %>% 
-  summarise(intl_pax=sum(pax)/1000000,
-            intl_ua=sum(ifelse(code=="UA",pax,0)/1000000),
-            intl_ca=sum(ifelse(code=="CA",pax,0)/1000000),
-            intl_lh=sum(ifelse(code=="LH",pax,0)/1000000),
-            intl_cx=sum(ifelse(code=="CX",pax,0)/1000000),
-            intl_ba=sum(ifelse(code=="BA",pax,0)/1000000)
-            ) %>% 
-  ggplot(aes(x=year)) + geom_area(aes(y=intl_pax,fill="red"),alpha=transparent) + 
-  geom_area(aes(y=intl_ua+intl_ca+intl_lh+intl_cx+intl_ba,fill="green"),alpha=transparent) + 
-  geom_area(aes(y=intl_ua+intl_ca+intl_lh+intl_cx,fill="blue"),alpha=transparent) +
-  geom_area(aes(y=intl_ua+intl_ca+intl_lh,fill="pink"),alpha=transparent) +
-  geom_area(aes(y=intl_ua+intl_ca,fill="black"),alpha=transparent) +
-  geom_area(aes(y=intl_ua,fill="orange"),alpha=transparent) +
-  scale_fill_discrete(name = "Airline",label=c("Air Canada","Cathay Pacific","British Airways", "United Airlines","Luthansa","Other Airlines")) + scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) + 
-  scale_y_continuous(name= "Passengers (Millions)", labels = comma) + theme_minimal() +
-  ggtitle("Passengers Count by Airlines") + theme(plot.title = element_text(hjust = 0.5)) 
-  
+data %>%
+  group_by(airline, year) %>% 
+  summarize(sum = sum(pax)) %>% 
+  right_join(top5_intl_list, by = "airline") %>%
+  ungroup() %>% 
+  rbind(other_intl_airline) %>%
+  rbind(data %>%
+          group_by(airline) %>%
+          right_join(top5_intl_list, by = "airline") %>%
+          summarize(year = min(year) - 1) %>%
+          filter(year == min(data$year)) %>%
+          mutate(sum = 0)) %>% 
+  mutate(airline = factor(airline, levels = rbind(top5_intl_list, "Other Airlines")$airline)) %>% 
+  ggplot() +
+  geom_area(aes(x = year, y = sum / million, fill = airline), alpha = 0.75) +
+  scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+  scale_y_continuous(name = "Passengers (Millions)") +
+  scale_fill_brewer(name = "Airline", palette = "Set3") +
+  theme_minimal() +
+  ggtitle("International Passengers Count by Airline") +
+  format_title +
+  format_legend_title
 ```
 
-
 ```{r top_region}
-top_area <- data %>% group_by(region,airline) %>% summarise(pax_flow=sum(pax)) %>% top_n(1,pax_flow)
+top_area <- data %>%
+  group_by(region, airline) %>%
+  summarise(pax_flow = sum(pax)) %>%
+  top_n(1, pax_flow)
 ```
 
 ### IV. Terminal Traffic
 
 ```{r terminal_domestic}
-data %>% filter(isDomestic) %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
-  ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
-    colour = "white",
-    place = "centre"
-  )
+data %>%
+  filter(isDomestic, !is.na(code)) %>%
+  group_by(terminal, airline, code) %>%
+  summarise(all_pax = sum(pax)) %>% 
+  ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre") +
+  scale_fill_brewer(name = "Terminal", palette = "Set2") +
+  ggtitle("Domestic Passengers Count by Airline and Terminal") +
+  format_title +
+  format_legend_title
 ```
 
 ```{r terminal_international}
-data %>% filter(!isDomestic & region!="Canada") %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
-  ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
-    colour = "white",
-    place = "centre"
-  )
+data %>%
+  filter(!isDomestic, !is.na(code)) %>%
+  group_by(terminal, airline, code) %>%
+  summarise(all_pax = sum(pax)) %>% 
+  ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre") +
+  scale_fill_brewer(name = "Terminal", palette = "Set2") +
+  ggtitle("International Passengers Count by Airline and Terminal") +
+  format_title +
+  format_legend_title
 ```
 
 
 ```{r terminal}
-data %>% group_by(terminal,airline,code) %>% summarise(all_pax=sum(pax)) %>% 
-  ggplot(aes(area=all_pax,fill=terminal,label=code,group = airline))+geom_treemap()+geom_treemap_text(
-    colour = "white",
-    place = "centre"
-  )
+data %>%
+  filter(!is.na(code)) %>%
+  group_by(terminal, airline, code) %>%
+  summarise(all_pax = sum(pax)) %>% 
+  ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre") +
+  scale_fill_brewer(name = "Terminal", palette = "Set2") +
+  ggtitle("Passengers Count by Airline and Terminal") +
+  format_title +
+  format_legend_title
 ```
 
 ### VI. Airlines
 
 ```{r united}
-data %>% filter(code=="UA") %>% group_by(month,year) %>% summarise(Passengers=sum(pax)) %>% ggplot(aes(x=month,y=year))+geom_tile(aes(fill=Passengers))+ theme_classic() + scale_fill_gradient(low="red",high="green") + scale_y_continuous(expand = c(0,0), name= "Year", breaks = seq(2006, 2017, by = 1)) + scale_x_discrete(name="Month",labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec")) + ggtitle("United Airlines Passengers Count") + theme(plot.title = element_text(hjust = 0.5))
+data %>%
+  filter(code == "UA") %>%
+  group_by(month, year) %>%
+  summarise(Passengers = sum(pax)) %>%
+  ggplot(aes(x = factor(month, labels = month.abb), y = year)) +
+  geom_tile(aes(fill = Passengers)) + 
+  scale_x_discrete(name = "Month") +
+  scale_y_continuous(expand = c(0, 0), name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+  scale_fill_gradientn(colours = rev(heat.colors(10)), labels = comma) +
+  theme_minimal() +
+  ggtitle("United Airlines Passengers Count") +
+  format_title +
+  format_legend_title
 ```
 
-```{r lufthansa}
-data %>% filter(code=="CX") %>% group_by(month,year) %>% summarise(Passengers=sum(pax)) %>% ggplot(aes(x=month,y=year))+geom_tile(aes(fill=Passengers))+ theme_classic() + scale_fill_gradient(low="red",high="green") + scale_y_continuous(expand = c(0,0), name= "Year", breaks = seq(2006, 2017, by = 1)) + scale_x_discrete(name="Month",labels = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec")) + ggtitle("Because Airlines Passengers Count") + theme(plot.title = element_text(hjust = 0.5))
+```{r cathay}
+data %>%
+  filter(code == "CX") %>%
+  group_by(month, year) %>%
+  summarise(Passengers = sum(pax)) %>%
+  ggplot(aes(x = factor(month, labels = month.abb), y = year)) +
+  geom_tile(aes(fill = Passengers)) + 
+  scale_x_discrete(name = "Month") +
+  scale_y_continuous(expand = c(0, 0), name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+  scale_fill_gradientn(colours = rev(heat.colors(10)), labels = comma) +
+  theme_minimal() +
+  ggtitle("United Airlines Passengers Count") +
+  format_title +
+  format_legend_title
 ```
 
