@@ -118,11 +118,25 @@ data %<>%
 
 
 ### I. Overview
+San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. The airport owned by this city is called San Francisco International Airport, SFO, located in the Northern part of San Mateo County, near Millbrae. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and even the Globe. 
+
+SFO has operated since 1927 and the first international service started in 1946. The report is going to investigate the following facts about SFO:
+
+1) Overall annual and monthly passengers count between 2006 and 2017
+
+2) Passengers Count by regions
+
+3) Passengers Count by airlines
+
+4) Passengers traffic travelled by Low Cost Carrier
+
+5) Passengers traffic in the airport terminals
+
+6) Passengers Count in 1 selected domestic carrier and 1 selected international carrier
 
 ```{r global_vars}
 million <- 1000000
 ```
-
 
 ```{r global_theme}
 format_title <- theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))

@@ -13,6 +13,7 @@ Case Study: Air Traffic Passenger Statistics
   * [x] Text: After the graph show the average annual growth rate of pax
   * [x] Bar Chart: average month pax and Domestic and International travelers
   * [x] Pie Chart: Enplane vs. deplane portion
+  * [ ] Line Chart: Pax growth
 
 * Goal: Destination
   * [x] Map: Passenger flows between SFO and continents
@@ -22,12 +23,12 @@ Case Study: Air Traffic Passenger Statistics
   * [x] Map: Top airline from each region by passengers
 
 * Goal: Low Cost Carrier vs Full Service Carrier
-  * [x] Line Chart: Percentage of lcc pax vs normal pax
-  * [x] Map: LCC that serves International destinations
+  * [ ] Line Chart: Percentage of lcc pax vs normal pax
+  * [ ] Map: LCC that serves International destinations
 
 * Goal: Terminal Traffic
   * [x] Tree Map: Terminal as subsection, airline pax
 
 * Goal: Focus on 1 Domestic Airline and 1 Non-North American Foreign Airline
   * [x] Time Series Calendar Heatmap: United
-  * [x] Time Series Calendar Heatmap: Lufthansa
+  * [x] Time Series Calendar Heatmap: Cathay Pacific
