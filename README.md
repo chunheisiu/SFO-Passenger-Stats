@@ -13,7 +13,7 @@ Case Study: Air Traffic Passenger Statistics
   * [x] Text: After the graph show the average annual growth rate of pax
   * [x] Bar Chart: average month pax and Domestic and International travelers
   * [x] Pie Chart: Enplane vs. deplane portion
-  * [ ] Line Chart: Pax growth
+  * [X] Line Chart: Pax growth
 
 * Goal: Destination
   * [x] Map: Passenger flows between SFO and continents

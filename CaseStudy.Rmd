@@ -118,9 +118,11 @@ data %<>%
 
 
 ### I. Overview
-San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. The airport owned by this city is called San Francisco International Airport, SFO, located in the Northern part of San Mateo County, near Millbrae. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and even the Globe. 
+San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. The airport owned by this city is called San Francisco International Airport, SFO, located in the Northern part of San Mateo County, near Millbrae. SFO has operated since 1927 and the first international service started in 1946. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. At the same time, SFO received the a lot of awards from rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and the Globe. 
 
-SFO has operated since 1927 and the first international service started in 1946. The open source from the San Francisco government offers the detail information on the passenger and air traffic in SFO between 2006 and 2017, including destination or origin, airlines, terminals, and passenger count. The report is going to investigate the following facts about SFO:
+San Francisco government offers open source data on the detail information on the passenger and air traffic in SFO between 2006 and 2017. The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July, 2005 and December, 2017. The data set consists `17960` rows and `10` columns.
+
+The report is going to investigate the following facts about SFO:
 
 1) Overall annual and monthly passengers count between 2006 and 2017
 
@@ -146,7 +148,7 @@ format_legend_title <- theme(legend.title = element_text(face = "bold"))
 
 #### Overall passenger traffic between 2006 and 2017
 
-Below is the annual total passengers count in SFO.
+SFO is a busy airport and is a transpacific geteway in the West Coast of the United States, the passenger traffic is heavy. Below is the annual total passengers count in SFO.
 
 ```{r annual_pax_trend}
 data %>% 
@@ -161,13 +163,47 @@ data %>%
   format_legend_title
 ```
 
-We can see a increasing trend on passengers count in SFO.
+```{r pax_data, echo = F}
+pax_year <- data %>% 
+              group_by(year) %>% 
+              summarise(sumpax = sum(pax))
+```
+
+There are `r pax_year[12,2]` passengers traveled in SFO `2017` compared to `r pax_year[1,2]` in `2006`. We can see a upward trend on passengers count in SFO. We can confirm the trend by plotting the annual passenger growth rate in the below line chart.
+
+```{r annual_growth_pax, warning = F, message = F}
+growth_rate <- function(x){
+  rate <- x/lag(x)-1
+  return (rate)
+}
+
+growth_rate_year <- pax_year %>% 
+                      mutate(growth = growth_rate(sumpax))
+
+
+
+ growth_rate_year %>% 
+  ggplot(aes(x = year, y = growth)) + 
+  geom_line() +
+  theme_minimal() +
+  scale_x_continuous(name = "Year", breaks = seq(2007, 2017, by = 1)) +
+  scale_y_continuous(name = "Growth Rate (%)", labels = percent) +
+  ggtitle("The Annual Passengers Count") +
+  format_title +
+  format_legend_title
+```
+```{r section1_data, echo = F}
+max_growth <- growth_rate_year %>% top_n(1,growth)
+avg_growth <- paste(round(mean(growth_rate_year$growth,na.rm = T),4)*100,"%", sep="")
+```
+
+Beside in `2009` SFO experienced a slow year in passenger growth, we can confirm SFO has a upward trend on passenger growth. `r max_growth[1,1]` is the year SFO experienced the strongest growth between `2006` and `2017`, with `r paste(round(max_growth[1,3])*100,"%", sep="")` growth. The average passenger growth in the period is `r avg_growth`.
+
+#### Average passenger traffic between 2006 and 2017
 
 The airline industry is season-sensitive industry. It means the season effects significant influence the passenger traffic. Generally, summer and Christmas holidays are two major peak season in the airline industry. Therefore, SFO experiences higher passenger traffic in those periods.
 
 Below is the bar chart of monthly average total passenger count of SFO between 2006 and 2017.
-
-#### Average passenger traffic between 2006 and 2017
 
 ```{r average_month_pax}
 data %>%
@@ -187,6 +223,9 @@ data %>%
 ```
 
 As seen on the bar chart, `June`, `July`, `August`, `October`, `December` are the months that SFO experience relatively higher passenger traffic. Beside `October`, the other high-traffic months are in the summer or Christmas holiday seasons. Interestingly, summer is the only busiest period of international traveling in or out from SFO as `June`, `July`, `August` are the only months that SFO handles more than `12000` international travelers. 
+
+Roughly 80% of passengers in SFO are domestic travelers.  
+
 
 #### Activity Type
 
@@ -211,9 +250,11 @@ data %>%
   format_legend_title
 ```
 
-
+There is no suprise on the close to 50%-50% split on departure and arrival passengers in SFO. As the domestic carriers tend not to operate transiting flight via SFO, the portion of transit flights in SFO becomes significantly small. At the same time, there are transit flighs operated by some foreign carriers such as Singapore Airlines' `Singapore - Hong Kong - San Francisco` route and China Southern Airlines' `Canton - Wuhan - San Francisco` route. Since SFO is the final destination of either route, therefore passengers traveled with those routes do not count toward `transit` flights.
 
 ### II. Destination
+
+As the bar chart on the monthly average passengers count shows that roughly 80% of the SFO passengers are domestic passengers. The map below shows the passengers count in North America between `2006` and `2017`.
 
 ```{r map_setup}
 # Load the world map and cities
@@ -347,6 +388,8 @@ world %>%
   format_title
 ```
 
+And the map below shows the passengers count on other regions other than North America between `2006` and `2017`.
+
 ```{r draw_intl_map, fig.height = 8}
 world %>% 
   filter(region != "Antarctica") %>% 
@@ -370,8 +413,11 @@ world %>%
   format_title
 ```
 
+The map shows that `Asia` is the continent the most passengers flying from or to after the United States, followed by `Europe`. Surprisingly there are less passengers coming from or going to `Canada` and `Mexico` than they coming from or going to `Asia` or `Europe`, and the passenger traffic from or to `Latin America` is very little. 
 
 ### III. Airline Overview
+
+There are a lot of airlines serving travelers in SFO. Below is the stacked line chart of the domestic passengers count by airlines.
 
 ```{r top5_dom_list}
 # Filter the top 5 airlines by domestic passenger count
@@ -417,6 +463,10 @@ data %>%
   format_legend_title
 ```
 
+The chart shows that a large portion of SFO travelers traveling by `United Airlines` as SFO is one of the hub of `United Airlines` in the West Coast. `Southwest Airline`, `Virgin America`(Recently Merged with `Alaska Airlines`), `Delta Airlines`, `American Airlines` are the other top 5 major carrier in SFO in passenger count.
+
+Below is the stacked line chart of the international passengers count by airlines.
+
 ```{r top_intl_list}
 # Filter the top 5 airlines by international passenger count
 top5_intl_list <- data %>%
@@ -460,6 +510,12 @@ data %>%
   format_title +
   format_legend_title
 ```
+
+`Air Canada` is largest foreign carrier operating international flights in SFO, serving flights between San Francisco and Vancouver, Victoria, Edmonton, Calgary, Toronto, and Montréal. The other major foreign carrier including `Lufthansa`, `British Airways`, and `Cathay Pacific` from Frankfurt and Munich, Germany, London Heathrow, Britain, and Hong Kong, respectively.
+
+
+A very large portion of international travelers 
+
 
 ```{r top_region}
 top_area <- data %>%
