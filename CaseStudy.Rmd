@@ -120,7 +120,7 @@ data %<>%
 ### I. Overview
 San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. The airport owned by this city is called San Francisco International Airport, SFO, located in the Northern part of San Mateo County, near Millbrae. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and even the Globe. 
 
-SFO has operated since 1927 and the first international service started in 1946. The report is going to investigate the following facts about SFO:
+SFO has operated since 1927 and the first international service started in 1946. The open source from the San Francisco government offers the detail information on the passenger and air traffic in SFO between 2006 and 2017, including destination or origin, airlines, terminals, and passenger count. The report is going to investigate the following facts about SFO:
 
 1) Overall annual and monthly passengers count between 2006 and 2017
 
@@ -146,6 +146,8 @@ format_legend_title <- theme(legend.title = element_text(face = "bold"))
 
 #### Overall passenger traffic between 2006 and 2017
 
+Below is the annual total passengers count in SFO.
+
 ```{r annual_pax_trend}
 data %>% 
   ggplot() +
@@ -154,10 +156,16 @@ data %>%
   scale_x_continuous(name = "Year", breaks = seq(2006, 2017, by = 1)) +
   scale_y_continuous(name = "Passengers (Millions)") +
   scale_fill_discrete(name = "Month") +
-  ggtitle("The Monthly Average Passengers Count") +
+  ggtitle("The Annual Passengers Count") +
   format_title +
   format_legend_title
 ```
+
+We can see a increasing trend on passengers count in SFO.
+
+The airline industry is season-sensitive industry. It means the season effects significant influence the passenger traffic. Generally, summer and Christmas holidays are two major peak season in the airline industry. Therefore, SFO experiences higher passenger traffic in those periods.
+
+Below is the bar chart of monthly average total passenger count of SFO between 2006 and 2017.
 
 #### Average passenger traffic between 2006 and 2017
 
@@ -178,7 +186,11 @@ data %>%
   format_legend_title
 ```
 
+As seen on the bar chart, `June`, `July`, `August`, `October`, `December` are the months that SFO experience relatively higher passenger traffic. Beside `October`, the other high-traffic months are in the summer or Christmas holiday seasons. Interestingly, summer is the only busiest period of international traveling in or out from SFO as `June`, `July`, `August` are the only months that SFO handles more than `12000` international travelers. 
+
 #### Activity Type
+
+The data set provided by the San Francisco government has the statistic on airplanes departure, arrival, and transit. Departure and arrival means airplanes depart and arrive in SFO, respectively. Transit means the passengers connect through SFO with the same airplane and the same flight number (If a passenger transfer from one plane to a different plane does not qualify "Transit" in the dataset). In the below pie chart shows the airplane activities between 2006 and 2017.
 
 ```{r traffic_type}
 total_traffic <- data %>%
@@ -198,6 +210,7 @@ data %>%
   format_title +
   format_legend_title
 ```
+
 
 
 ### II. Destination
