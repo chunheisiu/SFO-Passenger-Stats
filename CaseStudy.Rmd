@@ -250,11 +250,15 @@ data %>%
   format_legend_title
 ```
 
-There is no suprise on the close to 50%-50% split on departure and arrival passengers in SFO. As the domestic carriers tend not to operate transiting flight via SFO, the portion of transit flights in SFO becomes significantly small. At the same time, there are transit flighs operated by some foreign carriers such as Singapore Airlines' `Singapore - Hong Kong - San Francisco` route and China Southern Airlines' `Canton - Wuhan - San Francisco` route. Since SFO is the final destination of either route, therefore passengers traveled with those routes do not count toward `transit` flights.
+```{r pie_chart_explain}
+transit_list <- data %>% filter(type=="Thru / Transit") %>% count(airline) %>% arrange(desc(n))
+```
+
+There is no suprise on the close to 50%-50% split on departure and arrival passengers in SFO. Part of the reason is that the domestic carriers tend not to operate transiting flight via SFO, the portion of transit flights in SFO becomes significantly small. The top three airlines offers transit flights are `r transit_list[1,1]`, `r transit_list[2,1]` and `r transit_list[3,1]`. At the same time, there are transit flighs operated by some foreign carriers such as Singapore Airlines' `Singapore - Hong Kong - San Francisco` route and China Southern Airlines' `Canton - Wuhan - San Francisco` route. Since SFO is the final destination of either route, therefore passengers traveled with those routes do not count toward `transit` flights. 
 
 ### II. Destination
 
-As the bar chart on the monthly average passengers count shows that roughly 80% of the SFO passengers are domestic passengers. The map below shows the passengers count in North America between `2006` and `2017`.
+As the bar chart on the monthly average passengers count shows that roughly `80%` of the SFO passengers are domestic passengers. One maybe interested the destination of the remaining `20%` travelers. The map below shows the passengers count in North America between `2006` and `2017`.
 
 ```{r map_setup}
 # Load the world map and cities
@@ -388,7 +392,7 @@ world %>%
   format_title
 ```
 
-And the map below shows the passengers count on other regions other than North America between `2006` and `2017`.
+And the map below shows the passengers count on other regions outside North America between `2006` and `2017`.
 
 ```{r draw_intl_map, fig.height = 8}
 world %>% 
@@ -463,7 +467,7 @@ data %>%
   format_legend_title
 ```
 
-The chart shows that a large portion of SFO travelers traveling by `United Airlines` as SFO is one of the hub of `United Airlines` in the West Coast. `Southwest Airline`, `Virgin America`(Recently Merged with `Alaska Airlines`), `Delta Airlines`, `American Airlines` are the other top 5 major carrier in SFO in passenger count.
+The chart shows that a large portion of SFO travelers traveling by `r top5_dom_list[5,1]` as SFO is one of the hub of `r top5_dom_list[5,1]` in the West Coast. `r top5_dom_list[1,1]`, `r top5_dom_list[2,1]`(Recently Merged with `Alaska Airlines`), `r top5_dom_list[3,1]`, `r top5_dom_list[4,1]` are the other top 5 major carrier in SFO in passenger count.
 
 Below is the stacked line chart of the international passengers count by airlines.
 
@@ -511,10 +515,10 @@ data %>%
   format_legend_title
 ```
 
-`Air Canada` is largest foreign carrier operating international flights in SFO, serving flights between San Francisco and Vancouver, Victoria, Edmonton, Calgary, Toronto, and Montréal. The other major foreign carrier including `Lufthansa`, `British Airways`, and `Cathay Pacific` from Frankfurt and Munich, Germany, London Heathrow, Britain, and Hong Kong, respectively.
+`r top5_intl_list[4,1]` is largest foreign carrier operating international flights in SFO, serving flights between San Francisco and Vancouver, Victoria, Edmonton, Calgary, Toronto, and Montréal. The other major foreign carrier including `r top5_intl_list[3,1]`, `r top5_intl_list[1,1]`, and `r top5_intl_list[2,1]` from Frankfurt and Munich, Germany, London Heathrow, Britain, and Hong Kong, respectively.
 
 
-A very large portion of international travelers 
+A very large portion of international travelers not traveling with the top 5 airlines 
 
 
 ```{r top_region}
