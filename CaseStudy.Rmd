@@ -195,9 +195,10 @@ growth_rate_year <- pax_year %>%
 ```{r section1_data, echo = F}
 max_growth <- growth_rate_year %>% top_n(1,growth)
 avg_growth <- paste(round(mean(growth_rate_year$growth,na.rm = T),4)*100,"%", sep="")
+double_growth <- ceiling(70/(mean(growth_rate_year$growth,na.rm = T)*100))
 ```
 
-Beside in `2009` SFO experienced a slow year in passenger growth, we can confirm SFO has a upward trend on passenger growth. `r max_growth[1,1]` is the year SFO experienced the strongest growth between `2006` and `2017`, with `r paste(round(max_growth[1,3])*100,"%", sep="")` growth. The average passenger growth in the period is `r avg_growth`.
+Beside in `2009` SFO experienced a slow year in passenger growth, we can confirm SFO has a upward trend on passenger growth. `r max_growth[1,1]` is the year SFO experienced the strongest growth between `2006` and `2017`, with `r paste(round(max_growth[1,3])*100,"%", sep="")` growth. The average passenger growth in the period is `r avg_growth`. It will take `r double_growth` years after 2006 for SFO to double the passenger traffic, in `r 2006+double_growth`.
 
 #### Average passenger traffic between 2006 and 2017
 
@@ -467,7 +468,27 @@ data %>%
   format_legend_title
 ```
 
-The chart shows that a large portion of SFO travelers traveling by `r top5_dom_list[5,1]` as SFO is one of the hub of `r top5_dom_list[5,1]` in the West Coast. `r top5_dom_list[1,1]`, `r top5_dom_list[2,1]`(Recently Merged with `Alaska Airlines`), `r top5_dom_list[3,1]`, `r top5_dom_list[4,1]` are the other top 5 major carrier in SFO in passenger count.
+```{r dom_travel_info}
+airline_dom_pax <- data %>%
+                      filter(isDomestic) %>%
+                      group_by(airline) %>%
+                      summarise(total_pax = sum(pax))
+                
+
+top5_dom_pax <- airline_dom_pax %>% 
+                  top_n(5, total_pax) %>% 
+                  summarise(pax = sum(total_pax))
+
+dom_pax <- airline_dom_pax %>% summarise(pax = sum(total_pax))
+
+top5_dom_pax_num <- top5_dom_pax[1,1]
+all_dom_pax <- dom_pax[1,1]
+non_top5_dom_pax <- dom_pax[1,1] - top5_dom_pax[1,1]
+top5_dom_portion<- paste(round(top5_dom_pax_num/all_dom_pax,4)*100,"%",sep="")
+non_top5_dom_portion <- paste(round(non_top5_dom_pax/all_dom_pax,4)*100,"%",sep="")
+```
+
+The chart shows that a large portion of SFO travelers traveling by `r top5_dom_list[5,1]` as SFO is one of the hub of `r top5_dom_list[5,1]` in the West Coast. `r top5_dom_list[1,1]`, `r top5_dom_list[2,1]`(Recently Merged with `Alaska Airlines`), `r top5_dom_list[3,1]`, `r top5_dom_list[4,1]` are the other top 5 major carrier in SFO in passenger count. A large portion of travelers in SFO travel with those airlines, `r top5_dom_portion` of all travelers traveled with those airlines between `2006` and `2017`. 
 
 Below is the stacked line chart of the international passengers count by airlines.
 
@@ -515,11 +536,28 @@ data %>%
   format_legend_title
 ```
 
+```{r intl_travel_info}
+airline_intl_pax <- data %>%
+                      filter(!isDomestic) %>%
+                      group_by(airline) %>%
+                      summarise(total_pax = sum(pax))
+                
+
+top5_intl_pax <- airline_intl_pax %>% 
+                  top_n(5, total_pax) %>% 
+                  summarise(pax = sum(total_pax))
+
+intl_pax <- airline_intl_pax %>% summarise(pax = sum(total_pax))
+
+all_intl_pax <- intl_pax[1,1]
+non_top5_intl_pax <- intl_pax[1,1] - top5_intl_pax[1,1]
+non_top5_intl_portion <- paste(round(non_top5_intl_pax/all_intl_pax,4)*100,"%",sep="")
+```
+
 `r top5_intl_list[4,1]` is largest foreign carrier operating international flights in SFO, serving flights between San Francisco and Vancouver, Victoria, Edmonton, Calgary, Toronto, and Montréal. The other major foreign carrier including `r top5_intl_list[3,1]`, `r top5_intl_list[1,1]`, and `r top5_intl_list[2,1]` from Frankfurt and Munich, Germany, London Heathrow, Britain, and Hong Kong, respectively.
 
 
-A very large portion of international travelers not traveling with the top 5 airlines 
-
+A very large portion of international travelers not traveling with the top 5 airlines: `r non_top5_intl_portion`. The portion of international travelers not traveling with the top 5 airlines is significantly higher than the portion of domestic travelers not traveling with the top 5 airlines, which is `r non_top5_dom_portion`. The airline industry monopoly effect is more dominant in domestic flights than in the international flights.
 
 ```{r top_region}
 top_area <- data %>%
@@ -527,6 +565,79 @@ top_area <- data %>%
   summarise(pax_flow = sum(pax)) %>%
   top_n(1, pax_flow)
 ```
+
+###III. Low Cost Carrier vs Full Service Carrier
+
+Due to the advance of avaition technology, the cost of air travel significantly decrease in the last 100 years. In the last 40 years, there are more 
+
+```{r lcc_basic}
+dom_lcc_plot <- data %>% 
+              filter(isDomestic & 
+                       category=="Low Fare" &
+                       airline != "ATA Airlines" &
+                       airline != "Allegiant Air" &
+                       airline != "Servisair" &
+                       airline != "Spirit Airlines" &
+                       airline != "Trego Dugan Aviation") %>% 
+              group_by(year,airline) %>% 
+              summarise(sumpax = sum(pax)/1000000) %>% 
+              arrange(desc(sumpax))
+
+intl_lcc_plot <- data %>% 
+                  filter(!isDomestic & 
+                           category=="Low Fare" &
+                           airline != "ATA Airlines" &
+                           airline != "Servisair") %>% 
+                  group_by(year, airline) %>% 
+                  summarise(sumpax = sum(pax)) %>% 
+                  arrange(desc(sumpax))
+
+intl_lcc_plot_2017 <- data %>% 
+                  filter(!isDomestic & 
+                           category=="Low Fare" &
+                           airline != "ATA Airlines" &
+                           airline != "Servisair" &
+                           year == 2017) %>% 
+                  group_by(airline) %>% 
+                  summarise(sumpax = sum(pax)) %>% 
+                  arrange(desc(sumpax))
+```
+
+
+```{r domestic_lcc_linechart}
+dom_lcc_plot %>% ggplot(aes(x = year, y = sumpax, group = airline, color = airline)) +
+              geom_line() +
+              labs(x = "Year", y = "Total Passenger Count") +
+              scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+              scale_y_continuous(name = "Passengers (Million)", breaks = seq(0,max(dom_lcc_plot$sumpax), by = 1))
+
+```
+
+```{r intl_lcc_linechart}
+intl_lcc_plot %>% ggplot(aes(x = year, y = sumpax, fill = airline)) +
+                    scale_fill_brewer(palette = "Spectral") +
+                    geom_bar(stat = "identity") + 
+                    scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+                    scale_y_continuous(name = "Passengers", breaks = seq(0,500000,by=50000))
+
+```
+
+```{r intl_lcc_plot_2017}
+total_intl_lcc_pax_2017 <- intl_lcc_plot_2017 %>%  summarise(total_pax = sum(sumpax))
+total_intl_lcc_pax_2017 <- as.numeric(total_intl_lcc_pax_2017)
+
+intl_lcc_plot_2017 %>%
+  ggplot(aes(x = "", y = sumpax, fill = airline)) +
+  geom_bar(width = 1 , stat = "identity") +
+  geom_text(aes(x = 1, y = cumsum(sumpax) - sumpax / 2, label = percent(sumpax / total_intl_lcc_pax_2017))) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  scale_fill_brewer(palette = "Set2", name = "Airline") +
+  ggtitle("Low Cost Carrier International Flight") +
+  format_title +
+  format_legend_title
+```
+
 
 ### IV. Terminal Traffic
 
