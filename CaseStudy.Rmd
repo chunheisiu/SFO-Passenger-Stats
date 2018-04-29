@@ -1,12 +1,12 @@
 ---
 title: "BSDS 100 Case Study"
 author: "Jacques Sham & Charles Siu"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
+date: '`r format(Sys.time(), "%B %d, %Y")`'
 output: html_document
 ---
 
 ```{r setup, include = F}
-knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(echo = T)
 knitr::opts_chunk$set(fig.width = 10)
 ```
 
@@ -45,6 +45,26 @@ data <- suppressMessages(read_csv("Air_Traffic_Passenger_Statistics.csv"))
 
 ## Part 2: Introduction to the Data
 
+### I. Overview
+San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. The airport owned by this city is called San Francisco International Airport, SFO, located in the Northern part of San Mateo County, near Millbrae. SFO has operated since 1927 and the first international service started in 1946. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. At the same time, SFO received the a lot of awards from rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and the Globe. 
+
+San Francisco government offers open source data on the detail information on the passenger and air traffic in SFO between 2006 and 2017. The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July, 2005 and December, 2017. The data set consists `17960` rows and `10` columns.
+
+The report is going to investigate the following facts about SFO:
+
+1) Overall annual and monthly passengers count between 2006 and 2017
+
+2) Passengers Count by regions
+
+3) Passengers Count by airlines
+
+4) Passengers traffic travelled by Low Cost Carrier
+
+5) Passengers traffic in the airport terminals
+
+6) Passengers Count in 1 selected domestic carrier and 1 selected international carrier
+
+Before analyze the dataset, we have to clean the data and double check the accuarcy of the data.
 ```{r cleanup}
 # First, let's clean the data.
 # Rename the column names
@@ -76,28 +96,50 @@ data$region %<>% recode("Central America" = "Latin America",
                         "South America" = "Latin America")
 data$category %<>% recode("Other" = "Full Service") 
 
-## airline = Published Airline, mother company airline
-## code = Published Airline Code, code for variable "airline"
-## isDomestic: If the flight is domestic,T; if international: F
-## region: Geom region
-## type: activity type; Deplaned means arrival, Enplaned means departure, Thru / Transit is other 
-## category: Airline price type; Low fare is Low cost carrier, else are others
-## terminal: SFO terminal
-## area: area within SFO terminal
-## pax: passenger count of given row
+# Change terminal into factor
+data %<>%
+  mutate(terminal = factor(terminal, levels = c("Terminal 1", "Terminal 2", "Terminal 3", "International", "Other")))
 ```
 
-```{r cleanup2}
-## Need to clean up incorrect data
-## Below has the list of low cost carrier
-## https://www.icao.int/sustainability/Documents/LCC-List.pdf
+We have rename the column names of the dataset and convert the data structure of some column for the convenient of the analysis. Here is the explaination of each column:
+  airline [character]: Airline name
+  code [character]: Airline Code, code for variable "airline"
+  isDomestic [logical]: If the flight is `domestic`,T; if `international`: F, flights from/to Canada counts as International
+  region [character]: Geom region including `US`, `Canada`, `Mexico`, `Latin America`, `Europe`, `Middle East`, `Asia`, and `Australia / Oceania`
+  type [character]: activity type; `Deplaned` means arrival, `Enplaned` means departure, `Thru / Transit` means flight transit at SFO 
+  category [factor]: Airline price type; `Low fare` is Low cost carrier, else are others
+  terminal [factor]: SFO terminal
+  area [character]: area within SFO terminal
+  pax [int]: passenger count of given row
+  month [factor]: The `month` of the airline operates
+  year [double]: The `year` of the airline operates
 
+We also have to vertify the accuracy of the data, below is how we clean the data.
+Below is the steps we fix the dataset:
+
+
+Step 1: Standardize `United Airlines`
+`United Airlines` merged with `Continent Airlines` in 2013 that some data from `United Airlines` are written in `United Airlines - Pre 07/01/2013` that we have to convert this to `United Airlines` as we can tell those flights were `United Airlines`' operation.
+```{r cleanup2_step1}
 # Merge "United Airlines - Pre 07/01/2013" to "United Airlines"
 data$airline %<>% recode("United Airlines - Pre 07/01/2013" = "United Airlines")
+```
 
+Step 2: Standardize `Emirates`
+Some of `Emirates` data were written followed with a space. It looks like a typing error but it creates error when analyzing the data, so that I have to standardize all `Emirates` related data.
+```{r cleanup2_step2}
 # Remove the strip of "Emirates "
 data$airline %<>% recode("Emirates " = "Emirates")
+```
 
+Step 3: Re-identify the category
+There are a lot of `full service airlines` idenify as `low cost carrier`, and vice versa. The international official aviation organization, International Civil Aviation Organization(ICAO),  has an official definition on `low cost carrier` and provides a list of `low cost carrier`. We checked the airlines in the dataset and convert some of the wrongly identified airlines according to he their list.
+  
+This is the list of low cost carrier: https://www.icao.int/sustainability/Documents/LCC-List.pdf
+
+(Explaination what we did)
+  
+```{r clean2_step3}
 # Some airlines were wrongly identified in category
 # Convert the below airlines to full service/Low Fare
 full_svc_airline <- c("Air China", "Air India Limited", "Air New Zealand", "Air Pacific Limited dba Fiji Airways",
@@ -110,42 +152,22 @@ data %<>%
   mutate(cat_temp = ifelse(airline %in% full_svc_airline, "Full Service", 
                     ifelse(airline %in% lcc_svc_airline, "Low Fare", as.character(category)))) %>% 
   mutate(category = as.factor(cat_temp))
-
-# Change terminal into factor
-data %<>%
-  mutate(terminal = factor(terminal, levels = c("Terminal 1", "Terminal 2", "Terminal 3", "International", "Other")))
 ```
 
+## Part 3: Exploratory Analysis
 
-### I. Overview
-San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. The airport owned by this city is called San Francisco International Airport, SFO, located in the Northern part of San Mateo County, near Millbrae. SFO has operated since 1927 and the first international service started in 1946. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. At the same time, SFO received the a lot of awards from rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and the Globe. 
-
-San Francisco government offers open source data on the detail information on the passenger and air traffic in SFO between 2006 and 2017. The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July, 2005 and December, 2017. The data set consists `17960` rows and `10` columns.
-
-The report is going to investigate the following facts about SFO:
-
-1) Overall annual and monthly passengers count between 2006 and 2017
-
-2) Passengers Count by regions
-
-3) Passengers Count by airlines
-
-4) Passengers traffic travelled by Low Cost Carrier
-
-5) Passengers traffic in the airport terminals
-
-6) Passengers Count in 1 selected domestic carrier and 1 selected international carrier
-
-```{r global_vars}
+```{r global_vars, echo = F}
+## Define 1 Million
 million <- 1000000
 ```
 
-```{r global_theme}
+```{r global_theme, echo = F}
+## Set a global default on theme and legend on the ggplots
 format_title <- theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
 format_legend_title <- theme(legend.title = element_text(face = "bold"))
 ```
 
-
+### I. Overview on Passenger traffic in SFO
 #### Overall passenger traffic between 2006 and 2017
 
 SFO is a busy airport and is a transpacific geteway in the West Coast of the United States, the passenger traffic is heavy. Below is the annual total passengers count in SFO.
@@ -171,7 +193,8 @@ pax_year <- data %>%
 
 There are `r pax_year[12,2]` passengers traveled in SFO `2017` compared to `r pax_year[1,2]` in `2006`. We can see a upward trend on passengers count in SFO. We can confirm the trend by plotting the annual passenger growth rate in the below line chart.
 
-```{r annual_growth_pax, warning = F, message = F}
+```{r annual_growth_helper, echo = F}
+## Helper function to calculate annual growth rate
 growth_rate <- function(x){
   rate <- x/lag(x)-1
   return (rate)
@@ -180,8 +203,8 @@ growth_rate <- function(x){
 growth_rate_year <- pax_year %>% 
                       mutate(growth = growth_rate(sumpax))
 
-
-
+```
+```{r annual_growth_pax, warning = F, message = F}
  growth_rate_year %>% 
   ggplot(aes(x = year, y = growth)) + 
   geom_line() +
@@ -193,6 +216,7 @@ growth_rate_year <- pax_year %>%
   format_legend_title
 ```
 ```{r section1_data, echo = F}
+## Hard fact on passenger growth
 max_growth <- growth_rate_year %>% top_n(1,growth)
 avg_growth <- paste(round(mean(growth_rate_year$growth,na.rm = T),4)*100,"%", sep="")
 double_growth <- ceiling(70/(mean(growth_rate_year$growth,na.rm = T)*100))
@@ -568,7 +592,27 @@ top_area <- data %>%
 
 ###III. Low Cost Carrier vs Full Service Carrier
 
-Due to the advance of avaition technology, the cost of air travel significantly decrease in the last 100 years. In the last 40 years, there are more 
+Due to the advance of avaition technology, the cost of air travel significantly decrease in the last 100 years. Low cost carriers provide low cost traveling by significant ticket price to attract passengers; to make up the loss of revenue, `low cost carriers` cut cost on meals, seating comfort, onboard entertainment, and seating priority. Alternatively, airlines that provide decent meals, seating priority, and concern on seating comfort and onboard entertainment are called `full Service Carrier` For travelers travel without too much conceern on those feature, traveling with low cost carrier is a good choice for those travelers. Southwest Airlines is one of the sucessful story: Since the deregulation on domestic airline industry in United States, Southwest Airlines provides frequent short-haul domestic flights and became one of the largest airline in the United States. After the success of the Southwest Airlines story, there are more low cost carriers flying into SFO for the last 40 years. In 2016, Iceland-based low cost carrier, Wow Air, began scheduled service from Reykjavik, Iceland to SFO that makes Wow Air the first low cost carrier operate regular scheduled service to SFO outside of the North America.
+
+```{r lcc_info}
+lcc_pax <- data %>% filter(year==2017) %>% group_by(category) %>% summarise(sumpax = sum(pax)) %>% mutate(prct_pax = sumpax/sum(sumpax))
+
+lcc_pax_prct <- paste(round(lcc_pax[2,"prct_pax"],4)*100,"%",sep="")
+lcc_pax_count <- lcc_pax[2,"sumpax"]
+
+southwest_count <- data %>% filter(airline=="Southwest Airlines") %>% group_by(year) %>% summarise(yearpax = sum(pax))
+
+southwest_pax_growth <- southwest_count %>% filter(year >= 2010) %>% mutate(growth = growth_rate(yearpax))
+southwest_pax_y_growth <- southwest_pax_growth  %>% summarise(mean_growth = mean(growth, na.rm=T))
+
+wowair_pax_growth <- data %>% filter(airline=="WOW Air") %>% 
+  group_by(year) %>% summarise(yearpax = sum(pax)) %>% 
+  mutate(growth = growth_rate(yearpax)) %>% summarise(mean_growth = mean(growth, na.rm=T))
+```
+
+In 2017, about `r lcc_pax_count[1,1]` passengers traveled via SFO by low cost carriers, which makes up about `r lcc_pax_prct` of the total passengers count.
+
+The below line chart illurates the passenger counts among domestic low cost carriers, includes `AirTran Airways`, `Frontier Airlines`, `JetBlue Airways`, `Southwest Airlines`, `Sun Country Airlines`. 
 
 ```{r lcc_basic}
 dom_lcc_plot <- data %>% 
@@ -581,8 +625,9 @@ dom_lcc_plot <- data %>%
                        airline != "Trego Dugan Aviation") %>% 
               group_by(year,airline) %>% 
               summarise(sumpax = sum(pax)/1000000) %>% 
-              arrange(desc(sumpax))
+              arrange(desc(sumpax)) 
 
+## dataframes for plotting 
 intl_lcc_plot <- data %>% 
                   filter(!isDomestic & 
                            category=="Low Fare" &
@@ -597,30 +642,41 @@ intl_lcc_plot_2017 <- data %>%
                            category=="Low Fare" &
                            airline != "ATA Airlines" &
                            airline != "Servisair" &
+                           airline != "Sun Country Airlines" &
                            year == 2017) %>% 
                   group_by(airline) %>% 
                   summarise(sumpax = sum(pax)) %>% 
                   arrange(desc(sumpax))
 ```
 
-
 ```{r domestic_lcc_linechart}
 dom_lcc_plot %>% ggplot(aes(x = year, y = sumpax, group = airline, color = airline)) +
-              geom_line() +
-              labs(x = "Year", y = "Total Passenger Count") +
-              scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
-              scale_y_continuous(name = "Passengers (Million)", breaks = seq(0,max(dom_lcc_plot$sumpax), by = 1))
-
+        geom_line() +
+        labs(x = "Year", y = "Total Passenger Count")+
+        ggtitle("The Annual Passengers Count on Domestic Low Cost Carriers") +
+        scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
+        scale_y_continuous(name = "Passengers (Million)", breaks = seq(0,max(dom_lcc_plot$sumpax), by = 1))
 ```
+
+Prior to 2007, not a lot of passengers traveled by low cost carriers via SFO. The passengers count skyrocketed between 2007 and 2009 due to low cost carrier giant `Southwest Airlines` began service in SFO. `Southwest Airlines` served `r southwest_count[1,2]`,`r southwest_count[2,2]`,`r southwest_count[3,2]` passengers in `r `r southwest_count[1,1]`, `r southwest_count[2,1]`, and `r southwest_count[3,1]`, respectively. After 2009, the annual passenger growth `r paste(round(southwest_pax_y_growth,4)*100,"%",sep="")`. In `r southwest_count[11,1]`, `r southwest_count[11,2]` passengers traveled with `Southwest Airlines`.
+
+`JetBlues` is the second largest low cost carrier and provides regular service to Long Beach, CA, Fort Lauderdale, FL, Boston, and New York JFK. However, `JetBlues` only provides about 10 daily flights between SFO and above destinations. However, the `JetBlues`' flight frequency in SFO is significantly less than `Southwest Airlines`' flight frequency in SFO; for example, `Southwest Airlines` provides 58 daily flights between SFO and all Los Angeles area airports include Los Angeles, Burbank, Santa Ana, and Ontario, CA.
+
+There were not a lot of international low cost carrier service to SFO. Before 2016, `WestJet Airlines` and `XL Airways France` the only international low cost carrier operate seasonal route from Calgary and Vancouver to SFO, and Paris de Gauelle to SFO. In 2016, `Wow Air` annouced began scheduled service from Reykjavik, Iceland to SFO, about 5 times per week. Below is the bar chart on the passengers count on international low cost carriers. 
 
 ```{r intl_lcc_linechart}
 intl_lcc_plot %>% ggplot(aes(x = year, y = sumpax, fill = airline)) +
                     scale_fill_brewer(palette = "Spectral") +
                     geom_bar(stat = "identity") + 
                     scale_x_continuous(name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
-                    scale_y_continuous(name = "Passengers", breaks = seq(0,500000,by=50000))
+                    scale_y_continuous(name = "Passengers", breaks = seq(0,500000,by=50000))+
+                    ggtitle("The Annual Passengers Count on International Low Cost Carrier")+
+                    format_theme +
+                    format_title
 
 ```
+
+There were not a lot of passengers traveled with international low cost carrier prior to 2016. The passengers count almost double when `Wow Air` began service to SFO. The first year passenger growth of `Wow Air` was `r paste(round(wowair_pax_growth,4)*100,"%",sep="")`. However, `Wow Air`'s service to SFO is new, we expect the growth rate would smooth out to single digit by 2019 if we observe the pattern from `Southwest Airlines`' first 3 years of service in SFO. Below is the market share on international low-cost flight service. 
 
 ```{r intl_lcc_plot_2017}
 total_intl_lcc_pax_2017 <- intl_lcc_plot_2017 %>%  summarise(total_pax = sum(sumpax))
@@ -638,12 +694,22 @@ intl_lcc_plot_2017 %>%
   format_legend_title
 ```
 
+The above pie chart confirmed `Wow Air` has the largest market share on interntional low cost flights, follow by `WestJet Airlines` and `XL Airways France`.
+
+Although many travelers do not travel with low cost carriers, there are increasingly more passengers travel with low cost carriers. Therefore, we expect the portion of passengers traveled with low cost carrier increase. 
+
 
 ### IV. Terminal Traffic
 
+There are 4 terminals in SFO along with 115 gates: Terminal 1 (T1), Terminal 2 (T2), Terminal 3(T3), and International Terminal(IT). T1, T2, and T3 are designed to handle domestic and precleared flights from Canada, and IT are to handle international flgiths. 
+
+The oldest terminal is T2, formerly Center Terminal, which completed in 1954. Followed by is T1, formerly South Terminal, which was built in 1963. SFO expanded for the third time in 1979 by adding T3, formerly North Terminal. IT is the newest terminal in SFO, that is built in 2000. Recently, SFO is rebuilding T1, and scheduled to be completed by 2024. 
+
+Below is the tree map on domestic passenger count by terminal in 2017.
+
 ```{r terminal_domestic}
 data %>%
-  filter(isDomestic, !is.na(code)) %>%
+  filter(isDomestic, !is.na(code) & year == 2017) %>%
   group_by(terminal, airline, code) %>%
   summarise(all_pax = sum(pax)) %>% 
   ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
@@ -655,9 +721,27 @@ data %>%
   format_legend_title
 ```
 
+```{r domestic_pax}
+pax_terminal <- data %>% filter(isDomestic & year == 2017 & terminal != "other") %>% 
+                  group_by(terminal) %>% 
+                  summarise(sumpax = sum(pax)) %>% 
+                  mutate(prct_pax = sumpax/sum(sumpax)) %>% 
+                  arrange(desc(prct_pax))
+```
+
+As we can see from the tree map: `United Airlines` is assigned to dock at T3, and some flights dock at IT. `Delta Airlines`, `Southwest Airlines`, `Frontier Airlines` and partial `American Airlines` flights were docking at T1, and T2 serves `Alaska Airlines`, `Virgin Airlines`, and the remaining `American Airlines` flights. Due to the constraint capcity of T1, T2, T3, the remaining domestic carriers with less flight frequency to SFO, including `Hawaiian Airlines`, `Jetblue Airways`, `Sun Country Airlines`, and some `Alaska Airlines` flights, are docking in IT even those are domestic flights.
+
+About `r paste(round(pax_terminal[1,3],4)*100,"%",sep="")` passengers traveled via `r pax_terminal[1,1]` in 2017 that makes `r pax_terminal[1,1]` the busiest terminal in SFO, followed by `r pax_terminal[2,1]` with `r paste(round(pax_terminal[2,3],4)*100,"%",sep="")` of the domestic passengers. The remaining domestic passenger traveled in `r pax_terminal[3,1]` and `r pax_terminal[4,1]`, those make up of `r paste(round(pax_terminal[3,3],4)*100,"%",sep="")` and `r paste(round(pax_terminal[4,3],4)*100,"%",sep="")` of the domestic passenger traffic, respectively.
+
+
+
+Almost half of the domestic passengers in 2017 traveled with `United Airlines` which makes up the largest share of the domestic flight market, followed by the major domestic airlines includes `American Airlines`, `Alaska Airlines`, `Delta Airlines`, `Virgin America`, and the low cost carrier giant `Southwest Airlines`
+
+The below tree map illruates international passenger count by terminal in 2017.
+
 ```{r terminal_international}
 data %>%
-  filter(!isDomestic, !is.na(code)) %>%
+  filter(!isDomestic, !is.na(code) & year == 2017) %>%
   group_by(terminal, airline, code) %>%
   summarise(all_pax = sum(pax)) %>% 
   ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
@@ -669,26 +753,44 @@ data %>%
   format_legend_title
 ```
 
+```{r explain_it}
+intl_table <- data %>% filter(!isDomestic & terminal != "International" & year ==2017) %>% 
+                      group_by(airline,region) %>% 
+                      summarise(sumpax =sum(pax)) %>% 
+                      arrange(desc(sumpax))
+```
+
+
+There is no surpise on the majority of the international passengers travel via IT. However, we see a small portion of `United Airlines` and `Virgin America` passengers travel via in T3 and T2. Those international flights dock at T2 and T3 are precleared flights between Canada and Mexico. That means passengers' passport and custom are cleared in Canada or Mexico by both the US Federal and either Canadian or Mexican government, so that those precleared flights are allowed to dock at domestic terminals in SFO.
+
 
 ```{r terminal}
-data %>%
-  filter(!is.na(code)) %>%
-  group_by(terminal, airline, code) %>%
-  summarise(all_pax = sum(pax)) %>% 
-  ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
-  geom_treemap() +
-  geom_treemap_text(colour = "white", place = "centre") +
-  scale_fill_brewer(name = "Terminal", palette = "Set2") +
-  ggtitle("Passengers Count by Airline and Terminal") +
-  format_title +
-  format_legend_title
+# data %>%
+#   filter(!is.na(code)) %>%
+#   group_by(terminal, airline, code) %>%
+#   summarise(all_pax = sum(pax)) %>% 
+#   ggplot(aes(area = all_pax, fill = terminal, label = code, group = airline)) +
+#   geom_treemap() +
+#   geom_treemap_text(colour = "white", place = "centre") +
+#   scale_fill_brewer(name = "Terminal", palette = "Set2") +
+#   ggtitle("Passengers Count by Airline and Terminal") +
+#   format_title +
+#   format_legend_title
 ```
+
+We can see most of the domestic passengers traveled with `United Airlines` at T3. The remaining domestic passengers travel via T1, T2, and IT. Although we expect all international passengers travel via IT, we found the interesting fact that there are partial portion of 2017 international passengers travel via T2 and T3 because precleared flights to or from Canada or Mexico are allowed to dock in domestic terminals.
 
 ### VI. Airlines
 
+`United Airlines` is largest carrier in SFO in terms of passengers count in 2017, no matter in domestic or international flights since `United Airlines` set SFO as one of its hub that `United Airlines` has assigned a lot of flights fly in and out from SFO. In `United Airlines`' prespective, SFO is the 5th largest hub in terms of number of flights, and the primary hub for West Coast.
+
+`United Airlines`' footstep in SFO can be traced back in 1937, `United Airlines` operated scheduled service to Los Angeles and New York in January 1937 after it was formed in 1934. And `United Airlines` has one of the largest single aircraft maintence bases in SFO. 
+
+The below heated map show the passenger traffic between 2007 and 2017 for `United Airlines`:
+
 ```{r united}
 data %>%
-  filter(code == "UA") %>%
+  filter(code == "UA" & year >= 2007) %>%
   group_by(month, year) %>%
   summarise(Passengers = sum(pax)) %>%
   ggplot(aes(x = factor(month, labels = month.abb), y = year)) +
@@ -701,10 +803,16 @@ data %>%
   format_title +
   format_legend_title
 ```
+
+The above heated map shows the passenger traffic is relatively low by 2012. Also, we can also confirm that there are more passengers travel by `United Airlines` in summer period as `June`, `July`, and `August` of every year tend to have a darker colored pattern.
+
+`Cathay Pacific` is a Scotish, Hong Kong-based airline. It was founded in 1946 in Hong Kong after the founders fled from Shanghai with their DC-3s, `Besty` and `Nikki`. Rather than calling "Hong Kong Airlines", the founders choose "Cathay" which is a medival word to represent "China"; Pacific is added in the name as the founders help one day `Cathay Pacifc` operates route across the Pacific Ocean from Hong Kong. Their dream came true in 1983, `Cathay Pacific` operated its first trans-Pacific flight from Hong Kong to Vancouver; in 1986, `Cathay Pacific` added SFO as the final destination in 1986 making SFO the first US destination of `Cathay Pacific`. In the 90's, `Cathay Pacific` discontinue the flight to SFO; `Cathay Pacific` started to operate daily direct flight from Hong Kong to SFO in 1999.
+
+The below heated map show the passenger traffic between 2007 and 2017 for `Cathay Pacific`:
 
 ```{r cathay}
 data %>%
-  filter(code == "CX") %>%
+  filter(code == "CX" & year >=2007) %>%
   group_by(month, year) %>%
   summarise(Passengers = sum(pax)) %>%
   ggplot(aes(x = factor(month, labels = month.abb), y = year)) +
@@ -713,8 +821,18 @@ data %>%
   scale_y_continuous(expand = c(0, 0), name = "Year", breaks = seq(min(data$year), max(data$year), by = 1)) +
   scale_fill_gradientn(colours = rev(heat.colors(10)), labels = comma) +
   theme_minimal() +
-  ggtitle("United Airlines Passengers Count") +
+  ggtitle("Cathay Pacific Passengers Count") +
   format_title +
   format_legend_title
 ```
 
+The passenger traffic of `Cathay Pacific` has a big jump between 2007 and 2008 due to `Cathay Pacific` increase their flight frequency from 1 daily flight to 2 daily flights. While `Cathay Pacific` announced expansion in 2017, `Cathay Pacific` will operate 3 daily flights between Hong Kong and SFO and we expect more passengers traveling `Cathay Pacific` in the future.
+
+The seasonal effect on `Cathay Pacific` is little. The colored pattern across each year are very similiar that suggests the passengers count with `Cathay Pacific` is relatively more consistent across a year.
+
+
+## Part 4: Conclusions and Future Analysis
+
+(Some conclusion on our analysis)
+
+However, the dataset we have for this report focus mainly on region the flights fly to or from, there was not a lot of information on destination/origin cities and country, aircraft models. In this report, we are able to trace the destination/origin cities and country of foreign carriers from their website; we are not able to trace destination/origin cities and country for domestic carriers. In the future, we would like to explore more on destination/origin cities and country and aircraft models each flight. 
