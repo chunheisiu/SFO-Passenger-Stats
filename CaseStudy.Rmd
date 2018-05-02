@@ -40,29 +40,25 @@ data <- suppressMessages(read_csv("Air_Traffic_Passenger_Statistics.csv"))
 ```
 
 ## Part 1: Executive Summary
-San Francisco is the Pacific gateway of the United States. The San Francisco International Airport is one of the greatest expense of the city and county government. We would like to know passenger traffic in the airport to check whether the tax revenue is spent wisely. San Francisco City and County Government provides open source dataset on passenger counts on airlines and regions in the airport. The dataset consists more than 17000 entries between 2005 and 2017 on passenger count. Each entry consists the name of the airline and destination or origin region. We summarised the dataset to find out the passenger traffic related with airlines, origin or destination, and time. This analysis allows San Francisco taxpayers on understanding the usage on air travel infrastructure and airport authoritative to propose an investment on airport expansion. 
+San Francisco is the Pacific gateway of the United States. The San Francisco International Airport is one of the greatest expense of the city and county government. We would like to know passenger traffic in the airport to check whether the tax revenue is spent wisely. San Francisco City and County Government provides open source dataset on passenger counts on airlines and regions in the airport. The dataset consists of more than 17000 entries between 2005 and 2017 on passenger count. Each entry consists the name of the airline and destination or origin region. We summarised the dataset to find out the passenger traffic related with airlines, origin or destination, and time. This analysis allows San Francisco taxpayers on understanding the usage on air travel infrastructure and airport authoritative to propose an investment on airport expansion. 
 
 ## Part 2: Introduction to the Data
 ### I. Overview
-San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. SFO is the ITAT airport code of the San Francisco International Airport defined by the International Air Transport Association(ITAT), and is also the abbreviation of the airport. SFO has operated since 1927 and the first international service started in 1946. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. At the same time, SFO received the a lot of awards from the air travel rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and the Globe. 
+San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. SFO is the IATA airport code of the San Francisco International Airport defined by the International Air Transport Association (IATA), and is also the abbreviation of the airport. SFO has operated since 1927 and the first international service started in 1946. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. At the same time, SFO received the a lot of awards from the air travel rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and the Globe. 
 
-The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July, 2005 and December, 2017. The data set consists `17960` rows and `10` columns. Here is the link of the dataset: https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg
+The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July 2005 and December 2017. The data set consists of ``r formatC(nrow(data), big.mark=",")`` rows and ``r formatC(ncol(data), big.mark=",")`` columns. Here is the link of the dataset: https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg
 
 The report is going to investigate the following facts about SFO:
 
 1) Average monthly passengers traffic between 2006 and 2017
-
 2) Passengers traffic by destination/origin regions
-
 3) Overview on passengers traffic by domestic airlines
-
 4) Passengers traffic travelled by Low Cost Carrier
-
 5) Passengers traffic in airport terminals
-
 6) Passengers traffic on 1 selected domestic carrier
 
 Before analyze the dataset, we have to clean the data and double check the accuarcy of the data.
+
 ```{r cleanup, include = F}
 # First, let's clean the data.
 # Rename the column names
@@ -134,7 +130,7 @@ data$airline %<>% recode("Emirates " = "Emirates")
 
 **Step 3: Re-identify the category**
 
-There are a lot of `full service airlines` idenify as `low cost carrier`, and vice versa. The international official aviation organization, International Civil Aviation Organization(ICAO),  has an official definition on `low cost carrier` and provides a list of `low cost carrier`. We checked the airlines in the dataset and convert some of the wrongly identified airlines according to he their list. For example, the dataset was wrongly identify `Wow Air` as `full service carrier` but the airline is identify as `low cost carrier` by ICAO.
+There are a lot of `full service airlines` idenify as `low cost carrier`, and vice versa. The international official aviation organization, International Civil Aviation Organization (ICAO),  has an official definition on `low cost carrier` and provides a list of `low cost carrier`. We checked the airlines in the dataset and convert some of the wrongly identified airlines according to he their list. For example, the dataset was wrongly identify `Wow Air` as `full service carrier` but the airline is identify as `low cost carrier` by ICAO.
   
 This is the list of low cost carrier: https://www.icao.int/sustainability/Documents/LCC-List.pdf
   
@@ -238,20 +234,13 @@ sf <- world.cities %>%
 # Derive the cities and corresponding regions
 cities %<>%
   filter(
-    (name == "Adelaide" & country.etc == "Australia") |
-    (name == "La Paz" & country.etc == "Bolivia") |
-    (name %in% c("Saint Louis", "La Ronge",
-                 "Riyadh", "Mexico City", "Shenzhen", "Ostrava"))
-    ) %>% 
+    (name == "Adelaide" & country.etc == "Australia") | (name == "La Paz" & country.etc == "Bolivia") |
+    (name %in% c("Saint Louis", "La Ronge","Riyadh", "Mexico City", "Shenzhen", "Ostrava"))) %>% 
   mutate(region =
-           ifelse(name == "Adelaide", "Australia / Oceania",
-           ifelse(name == "Saint Louis", "US",
-           ifelse(name == "La Ronge", "Canada",
-           ifelse(name == "La Paz", "Latin America",
-           ifelse(name == "Riyadh", "Middle East",
-           ifelse(name == "Mexico City", "Mexico",
-           ifelse(name == "Shenzhen", "Asia",
-           ifelse(name == "Ostrava", "Europe", NA))))))))
+           ifelse(name == "Adelaide", "Australia / Oceania", ifelse(name == "Saint Louis", "US",
+           ifelse(name == "La Ronge", "Canada", ifelse(name == "La Paz", "Latin America",
+           ifelse(name == "Riyadh", "Middle East", ifelse(name == "Mexico City", "Mexico",
+           ifelse(name == "Shenzhen", "Asia", ifelse(name == "Ostrava", "Europe", NA))))))))
   ) %>% 
   full_join(y = data %>%
               mutate(region = as.character(region)) %>% 
@@ -271,46 +260,34 @@ cities_intl <- cities %>% filter(!(region %in% c("US", "Canada", "Mexico")))
 ```{r draw_map}
 # Geom objects for drawing static objects
 draw_sf_point <- geom_point(x = sf$long, y = sf$lat, color = "red", size = 3)
-draw_na_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
-                           hjust = 1, nudge_x = -2, color = "red", size = 3)
 draw_intl_sf_label <- geom_text(aes(x = sf$long, y = sf$lat, label = "SFO"),
                            hjust = 1, nudge_x = -5, color = "red", size = 3)
 draw_color_legend <- scale_color_discrete(name = "Activity Type",
                                           labels = c("Arriving SFO", "Departing SFO"))
 draw_size_legend <- scale_size_continuous(trans = "log10", guide = F)
+
 # Functions for drawing curves, points and labels
 draw_flight_curve <- function(d) {
   geom_curve(data = d %>% filter(type %in% c("Deplaned", "Enplaned")),
-                           aes(x = origin.long, y = origin.lat,
-                               xend = dest.long, yend = dest.lat,
-                               color = type, size = pax),
-                           curvature = 0.5, lineend = "round",
+                           aes(x = origin.long, y = origin.lat, xend = dest.long, yend = dest.lat,
+                               color = type, size = pax), curvature = 0.5, lineend = "round",
                            alpha = 0.75, arrow = arrow(length = unit(0.025, "npc")))
 }
 draw_city_points <- function(d) {
   return (geom_point(data = d, aes(x = long, y = lat), color = "black", size = 3))
 }
 
-draw_na_city_labels <- geom_text(data = cities_na,
-                          aes(x = long, y = lat, label = region),
-                              hjust = 0, nudge_x = 2, nudge_y = -0.5,
-                              color = "black", size = 3)
 draw_intl_city_labels <- geom_text(data = cities_intl, 
                               aes(x = long, y = lat, label = region),
                               hjust = 0, nudge_x = 3.5, nudge_y = -1,
                               color = "black", size = 3)
-draw_na_enplaned_labels <- geom_label(data = cities_na %>% filter(type == ("Enplaned")),
-      aes(x = long, y = lat, label = format(pax, big.mark = ","), color = type),
-      hjust = 0, nudge_x = 2, nudge_y = -2.5, size = 3, show.legend = F)
-draw_na_deplaned_labels <- geom_label(data = cities_na %>% filter(type == ("Deplaned")),
-      aes(x = long, y = lat - 4, label = format(pax, big.mark = ","), color = type),
-      hjust = 0, nudge_x = 2, nudge_y = -.75, size = 3, show.legend = F)
 draw_intl_enplaned_labels <- geom_label(data = cities_intl %>% filter(type == ("Enplaned")),
       aes(x = long, y = lat, label = format(pax, big.mark = ","), color = type),
       hjust = 0, nudge_x = 3.5, nudge_y = -7, size = 3, show.legend = F)
 draw_intl_deplaned_labels <-geom_label(data = cities_intl %>% filter(type == ("Deplaned")),
       aes(x = long, y = lat - 4, label = format(pax, big.mark = ","), color = type),
       hjust = 0, nudge_x = 3.5, nudge_y = -9.5, size = 3, show.legend = F)
+
 format_theme <- theme(
   axis.text = element_blank(),
   axis.line = element_blank(),
@@ -349,7 +326,7 @@ world %>%
 region_pax <- data %>% group_by(region) %>% summarise(sumpax = sum(pax)) %>% arrange(desc(sumpax))
 ```
 
-The map shows that `r region_pax[2,1]` is the continent the most passengers flying from or to after the United States, with `r format(as.matrix(region_pax[2,2]),big.mark=",")` passengers, followed by `Europe`. Surprisingly there are less passengers coming from or going to `Canada` and `Mexico` than they coming from or going to `Asia` or `Europe`, `r format(as.matrix(region_pax[4,2]),big.mark=",")` and `r format(as.matrix(region_pax[5,2]),big.mark=",")` passengers, respectively, and the passenger traffic from or to `Latin America` is very little, with `r format(as.matrix(region_pax[8,2]),big.mark=",")`. 
+The map shows that `r region_pax[2,1]` is the continent the most passengers flying from or to after the United States, with `r format(as.matrix(region_pax[2,2]), big.mark=",")` passengers, followed by `Europe`. Surprisingly there are less passengers coming from or going to `Canada` and `Mexico` than they coming from or going to `Asia` or `Europe`, `r format(as.matrix(region_pax[4,2]), big.mark=",")` and `r format(as.matrix(region_pax[5,2]), big.mark=",")` passengers, respectively, and the passenger traffic from or to `Latin America` is very little, with `r format(as.matrix(region_pax[8,2]), big.mark=",")`. 
 
 ### III. Domestic Carriers Overview
 There are a lot of airlines serving travelers in SFO. Below is the stacked line chart of the domestic passengers traffic by airlines.
@@ -462,9 +439,11 @@ intl_lcc_plot %>% ggplot(aes(x = year, y = sumpax, fill = airline)) +
   geom_bar(stat = "identity") + 
   scale_x_continuous(name = "Year",
         breaks = seq(min(data$year), max(data$year), by = 1)) +
-  scale_y_continuous(name = "Passengers", breaks = seq(0,500000,by=50000))+
+  scale_y_continuous(name = "Passengers", breaks = seq(0, 500000, by = 50000), labels = comma)+
   ggtitle("The Annual Passengers Count on International Low Cost Carrier")+
-  theme_minimal()
+  theme_minimal() +
+  format_title +
+  format_legend_title
 ```
 
 There were not a lot of option on international traveling with low cost carrier prior to 2016. The passengers count almost double when `Wow Air` began service to SFO. The first year passenger growth of `Wow Air` was `r paste(round(wowair_pax_growth,4)*100,"%",sep="")`. However, `Wow Air`'s service to SFO is new, we expect the growth rate would smooth out to single digit by 2019 if we observe the pattern from `Southwest Airlines`' first 3 years of service in SFO. 
