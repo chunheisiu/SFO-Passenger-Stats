@@ -40,13 +40,13 @@ data <- suppressMessages(read_csv("Air_Traffic_Passenger_Statistics.csv"))
 ```
 
 ## Part 1: Executive Summary
-San Francisco is the Pacific gateway of the United States. The San Francisco International Airport is one of the greatest expense of the city and county government. We would like to know passenger traffic in the airport to check whether the tax revenue is spent wisely. San Francisco City and County Government provides open source dataset on passenger counts on airlines and regions in the airport. The dataset consists of more than 17000 entries between 2005 and 2017 on passenger count. Each entry consists the name of the airline and destination or origin region. We summarised the dataset to find out the passenger traffic related with airlines, origin or destination, and time. This analysis allows San Francisco taxpayers on understanding the usage on air travel infrastructure and airport authoritative to propose an investment on airport expansion. 
+San Francisco is the Pacific gateway to the United States. Commuters travel in and out of the city, and a great percentage is by air, through the San Francisco International Airport (SFO). Maintenance for SFO accounts for a considerable amount in tax expenditure. We would like to investigate whether tax revenue is spent wisely by examining the passenger traffic of SFO. The Government of City and County of San Francisco maintains an open source dataset on the passenger count for every airline that operates at SFO. The dataset contains more than 17,000 entries between 2005 and 2017 on passenger count. Each entry contains the name of the airline, the destination or origin region of the flight, as well as the passenger count. We analyzed the dataset to find out the passenger traffic in relation to airlines, origin or destination, and time of year. This analysis allows San Francisco taxpayers to understand how tax is spent on air travel infrastructure, and for airport authorities to propose investments for airport expansion.
 
 ## Part 2: Introduction to the Data
 ### I. Overview
-San Francisco is the 13th largest city in the United States and is the Pacific Gateway of the nation. SFO is the IATA airport code of the San Francisco International Airport defined by the International Air Transport Association (IATA), and is also the abbreviation of the airport. SFO has operated since 1927 and the first international service started in 1946. The airport is the 2nd busiest airport in California, 7th busiest airport in the United States, and 23rd busiest airport in the world. At the same time, SFO received the a lot of awards from the air travel rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to the massive flow of passengers travel to different part of the United States and the Globe. 
+San Francisco is the 13th largest city in the United States and is the Pacific Gateway to the nation. The city's airport, San Francisco International Airport (SFO), accounts for the majority of air traffic in and out of the SF Bay Area. SFO has been in operation since 1927, with its first international service started in 1946. The airport is the 2nd busiest airport in California, the 7th busiest airport in the United States, and the 23rd busiest airport in the world. At the same time, SFO have received numerous awards from various air travel rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to accommodate the massive flow of passengers travelling to different parts of the United States and the world. 
 
-The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July 2005 and December 2017. The data set consists of ``r formatC(nrow(data), big.mark=",")`` rows and ``r formatC(ncol(data), big.mark=",")`` columns. Here is the link of the dataset: https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg
+The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July 2005 and December 2017. The data set consists of ``r format(nrow(data), big.mark = ",")`` rows and ``r format(ncol(data), big.mark = ",")`` columns. Here is the link of the dataset: https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg
 
 The report is going to investigate the following facts about SFO:
 
@@ -173,7 +173,7 @@ pax_year <- data %>%
 ```{r annual_growth_helper, echo = F}
 ## Helper function to calculate annual growth rate
 growth_rate <- function(x){
-  rate <- x/lag(x)-1
+  rate <- x / lag(x) - 1
   return (rate)
 }
 growth_rate_year <- pax_year %>% 
@@ -182,8 +182,8 @@ growth_rate_year <- pax_year %>%
 ```{r section1_data, echo = F}
 ## Hard fact on passenger growth
 max_growth <- growth_rate_year %>% top_n(1,growth)
-avg_growth <- paste(round(mean(growth_rate_year$growth,na.rm = T),4)*100,"%", sep="")
-double_growth <- ceiling(70/(mean(growth_rate_year$growth,na.rm = T)*100))
+avg_growth <- paste(round(mean(growth_rate_year$growth, na.rm = T), 4) * 100, "%", sep = "")
+double_growth <- ceiling(70 / (mean(growth_rate_year$growth, na.rm = T) * 100))
 ```
 
 SFO is a busy airport and is a transpacific geteway in the West Coast of the United States, the passenger traffic is heavy. There are `r format(as.matrix(pax_year[12,2]),big.mark=",")` passengers traveled in SFO `2017`, compared to `r format(as.matrix(pax_year[1,2]),big.mark=",")` in `2006`. The average annual passenger growth in the period is `r avg_growth`. It will take `r double_growth` years after 2006 for SFO to double the passenger traffic, in `r 2006+double_growth`.
