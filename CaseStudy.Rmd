@@ -40,13 +40,13 @@ data <- suppressMessages(read_csv("Air_Traffic_Passenger_Statistics.csv"))
 ```
 
 ## Part 1: Executive Summary
-San Francisco is the Pacific gateway to the United States. Commuters travel in and out of the city, and a great percentage is by air, through the San Francisco International Airport (SFO). Maintenance for SFO accounts for a considerable amount in tax expenditure. We would like to investigate whether tax revenue is spent wisely by examining the passenger traffic of SFO. The Government of City and County of San Francisco maintains an open source dataset on the passenger count for every airline that operates at SFO. The dataset contains more than 17,000 entries between 2005 and 2017 on passenger count. Each entry contains the name of the airline, the destination or origin region of the flight, as well as the passenger count. We analyzed the dataset to find out the passenger traffic in relation to airlines, origin or destination, and time of month and year. We would like to find out whether the average monthly passenger traffic to determine the seasonal effect of the airline industry, annual passenger traffic on domestic carriers, low cost carriers, and airport terminals, and destinations of travelers. We believe passenger traffic determines the effective use of tax revenue in SFO, and understanding passenger traffic pattern helps decision-making on investment. This analysis allows San Francisco taxpayers to understand how tax is spent on air travel infrastructure, and for airport authorities to propose investments for airport expansion.
+San Francisco is the Pacific gateway to the United States. Commuters travel in and out of the city, and a great percentage is by air, through the San Francisco International Airport (SFO). Maintenance for SFO accounts for a considerable amount in tax expenditure. We would like to investigate whether tax revenue is spent wisely by examining the passenger traffic of SFO. The Government of City and County of San Francisco maintains an open source dataset on the passenger count for every airline that operates at SFO. The dataset contains more than 17,000 entries between 2005 and 2017 on passenger count. Each entry contains the name of the airline, the destination or origin region of the flight, as well as the passenger count. We analyzed the dataset and find out the passenger traffic was growing in a steady rate in the period, increase demand of international passengers with low cost carrier, United Airlines is the largest operator in SFO. We believe passenger traffic determines the effective use of tax revenue in SFO and understand passenger traffic pattern helps decision-making on investment. This analysis allows San Francisco taxpayers to understand how tax is spent on air travel infrastructure, and for airport authorities to propose investments for airport expansion.
 
 ## Part 2: Introduction to the Data
 ### I. Overview
-San Francisco is the 13th largest city in the United States and is the Pacific Gateway to the nation. The city's airport, San Francisco International Airport (SFO), accounts for the majority of air traffic in and out of the SF Bay Area. SFO has been in operation since 1927, with its first international service started in 1946. The airport is the 2nd busiest airport in California, the 7th busiest airport in the United States, and the 23rd busiest airport in the world. At the same time, SFO have received numerous awards from various air travel rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to accommodate the massive flow of passengers travelling to different parts of the United States and the world. 
+San Francisco is the 13th largest city in the United States and is the Pacific Gateway to the nation. The city's airport SFO, accounts for the majority of air traffic in and out of the SF Bay Area. SFO has been in operation since 1927, with its first international service started in 1946. The airport is the 2nd busiest airport in California, the 7th busiest airport in the United States, and the 23rd busiest airport in the world. SFO has received numerous awards from various air travel rating agencies, such as the 3rd Best Airport in North America in 2012 and 3rd Best Airport Worldwide in 2014 from SkyTrax. There are 3 domestic terminals and 1 international terminal to accommodate the massive flow of passengers travelling to different parts of the United States and the world. 
 
-The data we downloaded from the San Francisco government includes destination or origin, airlines, terminals, and passenger count between July 2005 and December 2017. The data set consists of ``r format(nrow(data), big.mark = ",")`` rows and ``r format(ncol(data), big.mark = ",")`` columns. Here is the link of the dataset: https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg
+The data we downloaded from the San Francisco government includes destination, origin, airlines, terminals, and passenger count between July 2005 and December 2017. The data set consists of ``r format(nrow(data), big.mark = ",")`` rows and ``r format(ncol(data), big.mark = ",")`` columns. Here is the link to the dataset: https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg
 
 The report is going to investigate the following facts about SFO:
 
@@ -57,7 +57,7 @@ The report is going to investigate the following facts about SFO:
 5) Passengers traffic in airport terminals
 6) Passengers traffic on 1 selected domestic carrier
 
-Before analyze the dataset, we have to clean the data and double check the accuarcy of the data.
+Before we analyze the dataset, we have to clean the data and double check its accuarcy.
 
 ```{r cleanup, include = F}
 # First, let's clean the data.
@@ -95,7 +95,7 @@ data %<>%
   mutate(terminal = factor(terminal, levels = c("Terminal 1", "Terminal 2", "Terminal 3", "International", "Other")))
 ```
 
-We have rename the column names of the dataset and convert the data structure of some column for the convenient of the analysis. Here is the explaination of each column:
+We have renamed the column names of the dataset and converted the data structure of some columns for the convenience of the analysis. Here is the explaination of each column:
 
 * **airline** [character]: Airline name
 * **code** [character]: Airline Code, code for variable "airline"
@@ -109,8 +109,8 @@ We have rename the column names of the dataset and convert the data structure of
 * **month** [factor]: The `month` of the airline operates
 * **year** [double]: The `year` of the airline operates
 
-We also have to vertify the accuracy of the data, below is how we clean the data.
-Below is the steps we fix the dataset:
+We also have to vertify the accuracy of the data, below is how we have cleaned the data.
+Below are the steps we took to fix the dataset:
 
 **Step 1: Standardize `United Airlines`**
 
@@ -186,10 +186,10 @@ avg_growth <- paste(round(mean(growth_rate_year$growth, na.rm = T), 4) * 100, "%
 double_growth <- ceiling(70 / (mean(growth_rate_year$growth, na.rm = T) * 100))
 ```
 
-SFO is a busy airport and is a transpacific geteway in the West Coast of the United States, the passenger traffic is heavy. There are `r format(as.matrix(pax_year[12,2]),big.mark=",")` passengers traveled in SFO `2017`, compared to `r format(as.matrix(pax_year[1,2]),big.mark=",")` in `2006`. The average annual passenger growth in the period is `r avg_growth`. It will take `r double_growth` years after 2006 for SFO to double the passenger traffic, in `r 2006+double_growth`.
+SFO is a busy airport and is a transpacific geteway on the West Coast of the United States, and the passenger traffic is heavy. There are `r format(as.matrix(pax_year[12,2]),big.mark=",")` passengers traveled in SFO in `2017`, compared to `r format(as.matrix(pax_year[1,2]),big.mark=",")` in `2006`. The average annual passenger growth in the period is `r avg_growth`. It will take `r double_growth` years after 2006 for SFO to double the passenger traffic in `r 2006+double_growth`.
 
 #### Average passenger traffic between 2006 and 2017
-The airline industry is season-sensitive industry: It means the passenger traffic varies by seasons. Generally, summer and Christmas holidays are two major peak season in the airline industry. Therefore, SFO experiences higher passenger traffic in those periods.
+The airline industry is a season-sensitive industry: Meaning the passenger traffic varies by seasons. Generally, summer and Christmas holidays are two major peak seasons in the airline industry. Therefore, SFO experiences higher passenger traffic in those periods.
 
 Below is the bar chart of monthly average total passenger count of SFO between 2006 and 2017.
 
@@ -216,11 +216,11 @@ domestic_pax_result <- paste(round(domestic_pax[which(domestic_pax[1]==TRUE),"pr
 intl_pax_result <- paste(round(domestic_pax[which(domestic_pax[1]==FALSE),"prct_pax"]*100,2),"%",sep="")
 ```
 
-As seen on the bar chart, `June`, `July`, `August`, `October`, `December` are the months that SFO experience relatively higher passenger traffic. Beside `October`, the other high-traffic months are in the summer or Christmas holiday seasons. Interestingly, summer is the only busiest period of international traveling in or out from SFO as `June`, `July`, `August` are the only months that SFO handles more than `12000` international travelers. 
+As seen on the bar chart, `June`, `July`, `August`, `October`, `December` are the months that SFO experiences relatively higher passenger traffic. Beside `October`, the other high-traffic months are in the summer or Christmas holiday seasons. Interestingly, summer is the only busiest period of international traveling in or out from SFO as `June`, `July`, `August` are the only months that SFO handles more than `12000` international travelers. 
 About `r domestic_pax_result` of passengers via SFO were domestic travlers. 
 
 ### II. Destination
-As the bar chart on the monthly average passengers count shows that `r domestic_pax_result` of the SFO travelers are domestic travelers. One maybe interested the destination of the remaining `r intl_pax_result` travelers. The map below shows the total passengers count in North America between `2006` and `2017`.
+As the bar chart on the monthly average passengers count shows that `r domestic_pax_result` of the SFO travelers are domestic travelers; the remaining `r intl_pax_result` travelers are international travelers.
 
 And the map below shows the passengers count on other regions outside North America between `2006` and `2017`.
 
@@ -326,10 +326,10 @@ world %>%
 region_pax <- data %>% group_by(region) %>% summarise(sumpax = sum(pax)) %>% arrange(desc(sumpax))
 ```
 
-The map shows that `r region_pax[2,1]` is the continent the most passengers flying from or to after the United States, with `r format(as.matrix(region_pax[2,2]), big.mark=",")` passengers, followed by `Europe`. Surprisingly there are less passengers coming from or going to `Canada` and `Mexico` than they coming from or going to `Asia` or `Europe`, `r format(as.matrix(region_pax[4,2]), big.mark=",")` and `r format(as.matrix(region_pax[5,2]), big.mark=",")` passengers, respectively, and the passenger traffic from or to `Latin America` is very little, with `r format(as.matrix(region_pax[8,2]), big.mark=",")`. 
+The map shows that `r region_pax[2,1]` is the continent of the most passengers flying from or to after the United States, with `r format(as.matrix(region_pax[2,2]), big.mark=",")` passengers, followed by `Europe`. Surprisingly there are less passengers coming from or going to `Canada` and `Mexico` than they coming from or going to `Asia` or `Europe`, `r format(as.matrix(region_pax[4,2]), big.mark=",")` and `r format(as.matrix(region_pax[5,2]), big.mark=",")` passengers, respectively, and the passenger traffic coming from or going to `Latin America` is very little, with `r format(as.matrix(region_pax[8,2]), big.mark=",")`. 
 
 ### III. Domestic Carriers Overview
-There are a lot of airlines serving travelers in SFO. Below is the stacked line chart of the domestic passengers traffic by airlines.
+There are a lot of operators in SFO. Below is the stacked line chart of the domestic passengers traffic by airlines.
 
 ```{r top5_dom_list}
 # Filter the top 5 airlines by domestic passenger count
@@ -392,10 +392,10 @@ non_top5_dom_pax <- dom_pax[1,1] - top5_dom_pax[1,1]
 top5_dom_portion<- paste(round(top5_dom_pax_num/all_dom_pax,4)*100,"%",sep="")
 non_top5_dom_portion <- paste(round(non_top5_dom_pax/all_dom_pax,4)*100,"%",sep="")
 ```
-The chart shows that a large portion of SFO travelers traveling by `r top5_dom_list[5,1]` as SFO is one of the hub of `r top5_dom_list[5,1]` in the West Coast. `r top5_dom_list[1,1]`, `r top5_dom_list[2,1]`(Recently Merged with `Alaska Airlines`), `r top5_dom_list[3,1]`, `r top5_dom_list[4,1]` are the other top 5 major carrier in SFO in passenger count. A large portion of travelers in SFO travel with those airlines, `r top5_dom_portion` of all domestic travelers traveled with those airlines between `2006` and `2017`. 
+The chart shows that a large portion of SFO travelers are traveling by `r top5_dom_list[5,1]`, while SFO is one of the hub of `r top5_dom_list[5,1]` in the West Coast. `r top5_dom_list[1,1]`, `r top5_dom_list[2,1]`(Recently Merged with `Alaska Airlines` in 2017), `r top5_dom_list[3,1]`, `r top5_dom_list[4,1]` are the other top 5 major carrier in SFO in passenger count. A large portion of travelers in SFO travel with those airlines, `r top5_dom_portion` of all domestic travelers traveled with those airlines between `2006` and `2017`. 
 
 ###III. Low Cost Carrier vs Full Service Carrier
-Due to the advance of avaition technology, the cost of air travel significantly decrease in the last 100 years. Low cost carriers provide low cost traveling by significant ticket price to attract passengers; to make up the loss of revenue, `low cost carriers` cut cost on meals, seating comfort, onboard entertainment, and seating priority. Alternatively, airlines that provide decent meals, onboard entertainment, and offer comfortable seats and seating priority are called `full Service Carrier`. For travelers travel without too much concern on those feature, traveling with low cost carrier is a good choice for those travelers. Southwest Airlines is one of the sucessful story and is a low cost carrier giant in the United Staets. In 2016, Iceland-based low cost carrier, Wow Air, began scheduled service from Reykjavik, Iceland to SFO that makes Wow Air the first low cost carrier operate regular scheduled service to SFO outside of the North America.
+Due to the advance of avaition technology, the cost of air travel significantly decrease in the last 40 years. Low cost carriers provide low cost traveling by reducing significant ticket price to attract passengers; to make up the loss of revenue, `low cost carriers` cut cost on meals, seating comfort, onboard entertainment, and seating priority. Alternatively, airlines that provide decent meals, onboard entertainment, and offer comfortable seats and seating priority are called `full Service Carrier`. For travelers travel without too much concern on those feature, traveling with low cost carrier is a good choice for them. `Southwest Airlines` is one of the successful story and is a low cost carrier giant in the United Staets. In 2016, Iceland-based low cost carrier, `Wow Air`, began scheduled service from Reykjavik, Iceland to SFO that makes `Wow Air` the first low cost carrier operates regular scheduled service to SFO outside of the North America.
 
 ```{r lcc_info, include = F}
 lcc_pax <- data %>% filter(year==2017) %>% 
@@ -415,7 +415,7 @@ wowair_pax_growth <- data %>% filter(airline=="WOW Air") %>%
   mutate(growth = growth_rate(yearpax)) %>% summarise(mean_growth = mean(growth, na.rm=T))
 ```
 
-In 2017, about `r format(as.matrix(lcc_pax_count[1,1]),big.mark=",")` passengers traveled via SFO by low cost carriers, which makes up about `r lcc_pax_prct` of the total passengers count.
+In 2017, about `r format(as.matrix(lcc_pax_count[1,1]),big.mark=",")` passengers traveled via SFO by low cost carriers, which makes up about `r lcc_pax_prct` of the total passengers traffic.
 
 ```{r lcc_basic, include = F}
 intl_lcc_plot <- data %>% 
@@ -429,9 +429,9 @@ intl_lcc_plot <- data %>%
                   arrange(desc(sumpax))
 ```
 
-Prior to 2007, not a lot of passengers traveled by low cost carriers via SFO. The passengers count skyrocketed between 2007 and 2009 due to low cost carrier giant `Southwest Airlines` began service in SFO. `Southwest Airlines` served `r format(as.matrix(southwest_count[1,2]),big.mark=",")`, `r format(as.matrix(southwest_count[2,2]),big.mark=",")`, `r format(as.matrix(southwest_count[3,2]),big.mark=",")` passengers in `r southwest_count[1,1]`, `r southwest_count[2,1]`, and `r southwest_count[3,1]`, respectively. After 2009, the annual passenger growth `r paste(round(southwest_pax_y_growth,4)*100,"%",sep="")`. In `r southwest_count[11,1]`, `r format(as.matrix(southwest_count[11,2]),big.mark=",")` passengers traveled with `Southwest Airlines`.
+Prior to 2007, not a lot of passengers traveled by low cost carriers via SFO. The passengers traffic skyrocketed between 2007 and 2009 due to low cost carrier giant `Southwest Airlines` had began service in SFO. `Southwest Airlines` served `r format(as.matrix(southwest_count[1,2]),big.mark=",")`, `r format(as.matrix(southwest_count[2,2]),big.mark=",")`, `r format(as.matrix(southwest_count[3,2]),big.mark=",")` passengers in `r southwest_count[1,1]`, `r southwest_count[2,1]`, and `r southwest_count[3,1]`, respectively. After 2009, the annual passenger growth `r paste(round(southwest_pax_y_growth,4)*100,"%",sep="")`. In `r southwest_count[11,1]`, `r format(as.matrix(southwest_count[11,2]),big.mark=",")` passengers traveled with `Southwest Airlines`.
 
-There were not a lot of international low cost carrier service to SFO. Before 2016, `WestJet Airlines` and `XL Airways France` the only international low cost carrier operate seasonal routes in SFO. In 2016, `Wow Air` annouced began scheduled service from Reykjavik, Iceland. Below is the bar chart on the passengers count on international low cost carriers. 
+There was no international low cost carrier provide regular scheduled service to SFO prior to 2016, `WestJet Airlines` and `XL Airways France` the only international low cost carrier operate seasonal routes in SFO. In 2016, `Wow Air` annouced began scheduled service from Reykjavik, Iceland. Below is the bar chart on the passengers count on international low cost carriers. 
 
 ```{r intl_lcc_barchart}
 intl_lcc_plot %>% ggplot(aes(x = year, y = sumpax, fill = airline)) +
@@ -446,9 +446,9 @@ intl_lcc_plot %>% ggplot(aes(x = year, y = sumpax, fill = airline)) +
   format_legend_title
 ```
 
-There were not a lot of option on international traveling with low cost carrier prior to 2016. The passengers count almost double when `Wow Air` began service to SFO. The first year passenger growth of `Wow Air` was `r paste(round(wowair_pax_growth,4)*100,"%",sep="")`. However, `Wow Air`'s service to SFO is new, we expect the growth rate would smooth out to single digit by 2019 if we observe the pattern from `Southwest Airlines`' first 3 years of service in SFO. 
+The passengers traffic almost double when `Wow Air` between 2016 and 2017, the first year began service to SFO, it was `r paste(round(wowair_pax_growth,4)*100,"%",sep="")`. However, `Wow Air`'s service to SFO is new, we expect the growth rate would smooth out to single digit by 2019 if we observe the pattern from `Southwest Airlines`' first 3 years of service in SFO. 
 
-Although many travelers do not travel with low cost carriers, there are increasingly more passengers travel with low cost carriers. Therefore, we expect the portion of passengers traveled with low cost carrier increase. 
+Although many travelers do not travel with low cost carriers, there are increasingly more passengers travel with `Southwest Airlines` and `Wow Air`. Therefore, we expect the portion of passengers traveled with low cost carrier increase. 
 
 ### IV. Terminal Traffic
 There are 4 terminals in SFO along with 115 gates: Terminal 1 (T1), Terminal 2 (T2), Terminal 3(T3), and International Terminal(IT). T1, T2, and T3 are designed to handle domestic and precleared flights from Canada, and IT are to handle international flgiths. 
@@ -476,7 +476,7 @@ pax_terminal <- data %>% filter(isDomestic & year == 2017 & terminal != "other")
                   arrange(desc(prct_pax))
 ```
 
-As we can see from the tree map: `United Airlines` is assigned to dock at T3, and some flights dock at IT. `Delta Airlines`, `Southwest Airlines`, `Frontier Airlines` and partial `American Airlines` flights were docking at T1, and T2 serves `Alaska Airlines`, `Virgin Airlines`, and the remaining `American Airlines` flights. Due to the constraint capcity of T1, T2, T3, the remaining domestic carriers with less flight frequency from/to SFO, including `Hawaiian Airlines`, `Jetblue Airways`, `Sun Country Airlines`, and some `Alaska Airlines` flights, are docking in IT even those are domestic flights.
+As we can see from the tree map: `United Airlines` is assigned to dock at T3, although some `United Airlines` flights dock at IT. `Delta Airlines`, `Southwest Airlines`, `Frontier Airlines` and some `American Airlines` flights were docking at T1. T2 serves the flights of `Alaska Airlines`, `Virgin Airlines`, and the remaining `American Airlines` flights. Due to the constraint capcity of T1, T2, T3, the remaining domestic carriers with less flight frequency from/to SFO, including `Hawaiian Airlines`, `Jetblue Airways`, `Sun Country Airlines`, and some `Alaska Airlines` flights, are docking in IT even those are domestic flights.
 
 About `r paste(round(pax_terminal[1,3],4)*100,"%",sep="")` passengers traveled via `r pax_terminal[1,1]` in 2017 that makes `r pax_terminal[1,1]` the busiest terminal in SFO, followed by `r pax_terminal[2,1]` with `r paste(round(pax_terminal[2,3],4)*100,"%",sep="")` of the domestic passengers. The remaining domestic passenger traveled in `r pax_terminal[3,1]` and `r pax_terminal[4,1]`, those make up of `r paste(round(pax_terminal[3,3],4)*100,"%",sep="")` and `r paste(round(pax_terminal[4,3],4)*100,"%",sep="")` of the domestic passenger traffic, respectively.
 
@@ -484,7 +484,7 @@ Almost half of the domestic passengers in 2017 traveled with `United Airlines` w
 
 ### VI. Airlines
 
-`United Airlines` is largest carrier in SFO in terms of passengers count in 2017, both in domestic or international flights since `United Airlines` set SFO as one of its hub that `United Airlines` has assigned a lot of flights fly in and out from SFO. In `United Airlines`' prespective, SFO is the 5th largest hub in terms of number of flights, and the primary hub for West Coast.
+`United Airlines` is largest carrier in SFO in terms of passengers traffic in 2017, both in domestic or international flights since `United Airlines` set SFO as one of its hub; `United Airlines` has assigned a lot of flights fly in and out from SFO. In `United Airlines`' prespective, SFO is the 5th largest hub measured by number of flights, and the primary hub on the West Coast.
 
 `United Airlines`' footstep in SFO can be traced back in 1937, `United Airlines` operated scheduled service to Los Angeles and New York in January 1937 after it was formed in 1934. And `United Airlines` has one of the largest single aircraft maintence bases in SFO. 
 
@@ -511,6 +511,6 @@ The above heated map shows the passenger traffic is relatively low by 2012; the 
 
 ## Part 4: Conclusions and Future Analysis
 
-In the report, we found out that the passenger traffic growth was continuous between `2006` and `2017` and we expect the growth is to be continue. In this report, we found out `r domestic_pax_result` of the passengers are domestic travelers and most of the domestic travelers travel with `r top5_dom_list[5,1]`. There are increasingly more travelers travel out of the United States by low cost carriers. And the airline industry seasonal effect is very sentative, especially the largest operator in SFO, `United Airlines`. After received the result from the analysis, we can see that the tax money was spent reasonable on air travel infrastructure in San Francisco as the passenger traffic was growing between the time period, realize the need for long-term investment in SFO to increase the capcity for passenger travel to serve more travelers. At the same time, SFO adminstrative staffs can accommodate the short-term high demand on the airport service in the summer period, `June`, `July`, `August` after learning from the analysis.
+In the report, we found out that the passenger traffic growth was continuous between `2006` and `2017` and we expect that this growth will continue. In this report, we found out `r domestic_pax_result` of the passengers are domestic travelers and most of the domestic travelers travel with `r top5_dom_list[5,1]`. There are increasingly more travelers who travel out of the United States by low cost carriers. The largest operator in SFO, `United Airlines` is very sensitive to seasonal effect. After we have received the result from the analysis, we can see that the tax revenue was spent reasonable on air travel infrastructure in San Francisco because the passenger traffic was growing between the time period, realize the need for long-term investment in SFO to increase the capcity for passenger travel to serve more travelers in the future. At the same time, SFO adminstrative staffs can accommodate the short-term high demand on the airport service in the summer period, `June`, `July`, `August` after learning from the analysis.
 
 However, the dataset we have for this report focus mainly on the passenger counts of region the flights fly to or from, there was no information on destination/origin cities and country, aircraft models. In this report; we are not able to trace any of destination/origin cities and country of the airlines. In the future, we would like to explore more on destination/origin cities and country and aircraft models each flight. Additionally, we are surprised on the passenger traffic of `United Airlines` continue to grow although the `United Airlines`' reputation worsened in recent years. We would like to observe the passenger traffic change on `United Airlines` in the next few years if the reputation effect occurs.
