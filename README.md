@@ -24,11 +24,15 @@ Then, we use ggplot to visualize the data in:<br>
 1 - Bar Chart<br>
 ![Screenshot](image/bar_pax_count.png)<br>
 2 - World Map<br>
+![Screenshot](image/world_pax_count.png)<br>
 3 - Pie Chart<br>
 4 - Line Chart<br>
 5 - Stacked Line Chart<br>
+![Screenshot](image/stack_line_5dom.png)<br>
 6 - Tree Map<br>
+![Screenshot](image/tree_terminal.png)<br>
 7 - Heatmap<br>
+![Screenshot](image/heatmap_ua.png)<br>
 <br>
 The R markdown code could be found here: [R markdown code](CaseStudy.Rmd)<br>
 And as well as the output in [HTML](CaseStudy.html) and [PDF](CaseStudy.pdf)<br>
