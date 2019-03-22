@@ -22,6 +22,7 @@ In the given period, there are 17,959 observations.
 First, we did some data cleansing before making visualization because there were inconsistent and incorrect data entries.<br>
 Then, we use ggplot to visualize the data in:<br>
 1 - Bar Chart<br>
+![Screenshot](image/bar_pax_count.png)<br>
 2 - World Map<br>
 3 - Pie Chart<br>
 4 - Line Chart<br>
