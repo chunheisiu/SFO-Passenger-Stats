@@ -1,11 +1,11 @@
-# USF BSDS 100: Intro to Data Science with R
+## USF BSDS 100: Intro to Data Science with R
 Case Study: Air Traffic Passenger Statistics
 
-## Team Members
+###### Team Members
 * Jacques Sham ([@jacquessham](https://github.com/jacquessham))
 * Charles Siu ([@chunheisiu](https://github.com/chunheisiu))
 
-## Introduction
+### Introduction
 The goal of this project is to visualize the data from SFO operation to understand the passenger and airplane traffic in SFO. The project is done in R with ggplot for making all the visualization. <br>
 The data set is an open source data set obtained from DataSF<br>
 <a href="https://datasf.org/opendata/">Open SF</a>
@@ -18,7 +18,7 @@ As well as, the price type and boarding area of the airlines.<br>
 <br>
 In the given period, there are 17,959 observations.
 
-## Procedures and Result
+### Procedures and Result
 First, we did some data cleansing before making visualization because there were inconsistent and incorrect data entries.<br>
 Then, we use ggplot to visualize the data in:<br>
 1 - Bar Chart<br>
