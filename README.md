@@ -10,7 +10,7 @@ The project visualizes various passenger statistics of San Francisco Internation
 
 The dataset we sourced from DataSF includes destination, origin, airlines, terminals, and passenger count between July 2005 and December 2017. The dataset contains 17,959 rows and 12 columns. The dataset is available [here](https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg) and the data dictionary is available [here](DataSF_Data_Dictionary_for_Air_Traffic_Passenger_Statistics.pdf).
 
-### Procedures and Result
+### Procedures
 For the purpose of the project, we performed data cleansing to fix incorrect and inconsistent data entries. After that, we created a few visualizations using `ggplot` that aims to provide insights for the following about SFO:
 
 1. Average monthly passengers traffic between 2006 and 2017
@@ -20,7 +20,7 @@ For the purpose of the project, we performed data cleansing to fix incorrect and
 5. Passengers traffic in airport terminals
 6. Passengers traffic on 1 selected domestic carrier
 
-
+### Visualizations
 - Bar Chart: Monthly Average Passenger Traffic between 2006 and 2017<br><br>
 ![Screenshot](image/01.png)
 
@@ -39,4 +39,4 @@ For the purpose of the project, we performed data cleansing to fix incorrect and
 - Heatmap: Passenger Traffic of United Airlines<br><br>
 ![Screenshot](image/06.png)
 
-The detailed version of the report could be viewed in [PDF Version](CaseStudy.pdf) format. Additionally, the `rmd` source code is available [here](CaseStudy.Rmd) and the presentation slides are available [here](CaseStudy_Sham_Siu.pdf);
+The detailed version of the report could be viewed in [PDF Version](CaseStudy.pdf) format. Additionally, the `rmd` source code is available [here](CaseStudy.Rmd) and the presentation slides are available [here](CaseStudy_Sham_Siu.pdf).
