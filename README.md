@@ -21,22 +21,22 @@ For the purpose of the project, we performed data cleansing to fix incorrect and
 6. Passengers traffic on 1 selected domestic carrier
 
 
-1. Bar Chart: Monthly Average Passenger Traffic between 2006 and 2017<br><br>
+- Bar Chart: Monthly Average Passenger Traffic between 2006 and 2017<br><br>
 ![Screenshot](image/01.png)
 
-2. World Map: Passenger Traffic by International Destinations<br><br>
+- World Map: Passenger Traffic by International Destinations<br><br>
 ![Screenshot](image/02.png)
 
-3. Stacked Line Chart: Domestic Passenger Traffic by Airline<br><br>
+- Stacked Line Chart: Domestic Passenger Traffic by Airline<br><br>
 ![Screenshot](image/03.png)
 
-4. Stacked Bar Chart: Annual Passenger Traffic on International Low Cost Carriers<br><br>
+- Stacked Bar Chart: Annual Passenger Traffic on International Low Cost Carriers<br><br>
 ![Screenshot](image/04.png)
 
-5. Tree Map: Domestic Passenger Traffic of Airline and Terminal<br><br>
+- Tree Map: Domestic Passenger Traffic of Airline and Terminal<br><br>
 ![Screenshot](image/05.png)
 
-6. Heatmap: Passenger Traffic of United Airlines<br><br>
+- Heatmap: Passenger Traffic of United Airlines<br><br>
 ![Screenshot](image/06.png)
 
 The detailed version of the report could be viewed in [PDF Version](CaseStudy.pdf) format. Additionally, the `rmd` source code is available [here](CaseStudy.Rmd) and the presentation slides are available [here](CaseStudy_Sham_Siu.pdf);
