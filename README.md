@@ -6,34 +6,37 @@ Case Study: Air Traffic Passenger Statistics
 * Charles Siu ([@chunheisiu](https://github.com/chunheisiu))
 
 ### Introduction
-The goal of this project is to visualize the data from SFO operation to understand the passenger and airplane traffic in SFO. The project is done in R with ggplot for making all the visualization. <br>
-The data set is an open source data set obtained from DataSF<br>
-<a href="https://datasf.org/opendata/">Open SF</a>
-<br>
-And we can find the data dictionary [here](DataSF_Data_Dictionary_for_Air_Traffic_Passenger_Statistics.pdf)
-<br>
-The data set consists of 12 columns,<br>
-the columns indicates the destination/origin with passenger counts the airline carry each month.<br>
-As well as, the price type and boarding area of the airlines.<br>
-<br>
-In the given period, there are 17,959 observations.
+The project visualizes various passenger statistics of San Francisco International Airport (SFO), using the dataset published by the SF Airport Commission through DataSF. It utilizes R for scripting and ggplot for visualization. It is part of the coursework for BSDS 100 Intro to Data Science with R class at University of San Francisco.
+
+The dataset we sourced from DataSF includes destination, origin, airlines, terminals, and passenger count between July 2005 and December 2017. The dataset contains 17,959 rows and 12 columns. The dataset is available [here](https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg) and the data dictionary is available [here](DataSF_Data_Dictionary_for_Air_Traffic_Passenger_Statistics.pdf).
 
 ### Procedures and Result
-First, we did some data cleansing before making visualization because there were inconsistent and incorrect data entries.<br>
-Then, we use ggplot to visualize the data in:<br>
-1 - Bar Chart<br>
-![Screenshot](image/bar_pax_count.png)<br>
-2 - World Map<br>
-![Screenshot](image/world_pax_count.png)<br>
-3 - Pie Chart<br>
-4 - Line Chart<br>
-5 - Stacked Line Chart<br>
-![Screenshot](image/stack_line_5dom.png)<br>
-6 - Tree Map<br>
-![Screenshot](image/tree_terminal.png)<br>
-7 - Heatmap<br>
-![Screenshot](image/heatmap_ua.png)<br>
-<br>
-The R markdown code could be found here: [R markdown code](CaseStudy.Rmd)<br>
-And as well as the output in [HTML](CaseStudy.html) and [PDF](CaseStudy.pdf)<br>
-Finally, the powerpoint slides for presentation is [here](CaseStudy_Sham_Siu.pdf)<br>
+For the purpose of the project, we performed data cleansing to fix incorrect and inconsistent data entries. After that, we created a few visualizations using `ggplot` that aims to provide insights for the following about SFO:
+
+1. Average monthly passengers traffic between 2006 and 2017
+2. Passengers traffic by destination/origin regions
+3. Overview on passengers traffic by domestic airlines
+4. Passengers traffic traveled by Low Cost Carrier
+5. Passengers traffic in airport terminals
+6. Passengers traffic on 1 selected domestic carrier
+
+
+1. Bar Chart: Monthly Average Passenger Traffic between 2006 and 2017<br><br>
+![Screenshot](image/01.png)
+
+2. World Map: Passenger Traffic by International Destinations<br><br>
+![Screenshot](image/02.png)
+
+3. Stacked Line Chart: Domestic Passenger Traffic by Airline<br><br>
+![Screenshot](image/03.png)
+
+4. Stacked Bar Chart: Annual Passenger Traffic on International Low Cost Carriers<br><br>
+![Screenshot](image/04.png)
+
+5. Tree Map: Domestic Passenger Traffic of Airline and Terminal<br><br>
+![Screenshot](image/05.png)
+
+6. Heatmap: Passenger Traffic of United Airlines<br><br>
+![Screenshot](image/06.png)
+
+The detailed version of the report could be viewed in [PDF Version](CaseStudy.pdf) format. Additionally, the `rmd` source code is available [here](CaseStudy.Rmd) and the presentation slides are available [here](CaseStudy_Sham_Siu.pdf);
