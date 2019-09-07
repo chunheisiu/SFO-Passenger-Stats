@@ -6,7 +6,7 @@ Case Study: SFO Air Traffic Passenger Statistics
 * Charles Siu ([@chunheisiu](https://github.com/chunheisiu))
 
 ### Introduction
-The project visualizes various passenger statistics of San Francisco International Airport (SFO), using the dataset published by the SF Airport Commission through DataSF. It utilizes `R` for scripting and `ggplot` for visualization. It is part of the coursework for *BSDS 100 Intro to Data Science with R class* at University of San Francisco.
+The project visualizes various passenger statistics of San Francisco International Airport (SFO), using the dataset published by the SF Airport Commission through DataSF. It utilizes `R` for scripting and `ggplot` for visualization. It is part of the coursework for *BSDS 100 Intro to Data Science with R* class at the University of San Francisco.
 
 The dataset we sourced from DataSF includes destination, origin, airlines, terminals, and passenger count between July 2005 and December 2017. The dataset contains 17,959 rows and 12 columns. The dataset is available [here](https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg) and the data dictionary is available [here](DataSF_Data_Dictionary_for_Air_Traffic_Passenger_Statistics.pdf).
 
